@@ -15,7 +15,6 @@ const RandomId = 0
 var strings = lang.Lang.Message
 
 func formatAttachments(attachment object.WallWallpostAttachment) string {
-	// TODO: Ugly.
 	var attachmentString string
 	if api.FmtValue(attachment.Photo, 1) != "photo0_0" {
 		attachmentString += attachment.Photo.ToAttachment() + ","
@@ -41,7 +40,6 @@ func getPublicationDate(postDate int) string {
 }
 
 func getMessageText(post object.WallWallpost) string {
-	// TODO: Ugly. Put magic strings somewhere else for ease of translation. i18n maybe?
 	// Get beautiful-ish formatted string for message text
 	// 1. Get publication date
 	const newline = "\n"

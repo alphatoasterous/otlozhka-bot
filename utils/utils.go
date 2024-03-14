@@ -14,7 +14,6 @@ func StringToInt(s string) (int, error) {
 }
 
 func RemoveTrailingComma(s string) string {
-	// TODO: Ewwww
 	if len(s) > 0 && s[len(s)-1] == ',' {
 		return s[:len(s)-1]
 	}

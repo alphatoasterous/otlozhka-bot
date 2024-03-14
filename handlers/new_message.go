@@ -32,7 +32,7 @@ func getOtlozhka(obj events.MessageNewObject, vk *api.VK, vk_user *api.VK, group
 			msg.PeerID(obj.Message.PeerID)
 			_, err := vk.MessagesSend(msg.Params)
 			if err != nil {
-				log.Print(err) // TODO: Test out if one failed post will hang all up
+				log.Print(err)
 				msg = api_utils.CreateMessageSendBuilderText(language.ErrorPostponedPostMessageFailed)
 				_, err := vk.MessagesSend(msg.Params)
 				if err != nil {
