@@ -10,26 +10,30 @@ import (
 type (
 	ProjectStrings struct {
 		Main              mainStrings
-		NewMessageHandler newMessageHandlerStrings
 		Message           messageStrings
+		NewMessageHandler newMessageHandlerStrings
 	}
 	mainStrings struct {
+		StartLongPollMsg string
+
 		ErrorDotenvFailed string
-		StartLongPollMsg  string
 	}
 	newMessageHandlerStrings struct {
-		IncomingMessage                 string
-		PostponedKeywordRegex           string
-		PostponedKeywordRegexCompiled   *regexp.Regexp
-		PostponedPostsFound             []string
-		NoPostponedPostsFound           []string
+		IncomingMessage               string
+		PostponedKeywordRegex         string
+		PostponedKeywordRegexCompiled *regexp.Regexp
+		PostponedPostsFound           []string
+		NoPostponedPostsFound         []string
+
 		ErrorPostponedPostMessageFailed string
 	}
 	messageStrings struct {
-		MessagePostDate      string
-		MessagePostAudio     string
-		MessagePostText      string
-		Timezone             string
+		MessagePostDate  string
+		MessagePostAudio string
+		MessagePostText  string
+		TimeFormat       string
+		Timezone         string
+
 		ErrorLoadingTimeZone string
 	}
 )

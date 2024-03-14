@@ -13,5 +13,6 @@ ErrorPostponedPostMessageFailed = "Тут должна была быть инф�
 MessagePostDate =  "📅 Дата и время публикации: "
 MessagePostAudio = "🎵 "
 MessagePostText =  "📝 Текст публикации: "
+TimeFormat = "02.01.2006 15:04:05 МСК"
 Timezone = "Europe/Moscow"
 ErrorLoadingTimeZone = "Ошибка загрузки часового пояса"

@@ -11,7 +11,7 @@ import (
 	"strings"
 )
 
-var language = lang.Lang.NewMessageHandler
+var lng = lang.Lang.NewMessageHandler
 
 func getOtlozhka(obj events.MessageNewObject, vk *api.VK, vk_user *api.VK, group object.GroupsGroup) {
 	posts, err := api_utils.GetAllPostponedWallposts(vk_user, group.ScreenName)
@@ -21,7 +21,7 @@ func getOtlozhka(obj events.MessageNewObject, vk *api.VK, vk_user *api.VK, group
 	foundPosts := api_utils.FindByFromID(posts, obj.Message.PeerID)
 	if len(foundPosts) != 0 { // if foundPosts is not empty (posts found)
 		message := api_utils.CreateMessageSendBuilderText(
-			utils.GetRandomItemFromStrArray(language.PostponedPostsFound))
+			utils.GetRandomItemFromStrArray(lng.PostponedPostsFound))
 		message.PeerID(obj.Message.PeerID)
 		_, err := vk.MessagesSend(message.Params)
 		if err != nil {
@@ -33,7 +33,7 @@ func getOtlozhka(obj events.MessageNewObject, vk *api.VK, vk_user *api.VK, group
 			_, err := vk.MessagesSend(msg.Params)
 			if err != nil {
 				log.Print(err)
-				msg = api_utils.CreateMessageSendBuilderText(language.ErrorPostponedPostMessageFailed)
+				msg = api_utils.CreateMessageSendBuilderText(lng.ErrorPostponedPostMessageFailed)
 				_, err := vk.MessagesSend(msg.Params)
 				if err != nil {
 					log.Fatal(err)
@@ -42,7 +42,7 @@ func getOtlozhka(obj events.MessageNewObject, vk *api.VK, vk_user *api.VK, group
 		}
 	} else {
 		message := api_utils.CreateMessageSendBuilderText(
-			utils.GetRandomItemFromStrArray(language.NoPostponedPostsFound))
+			utils.GetRandomItemFromStrArray(lng.NoPostponedPostsFound))
 		message.PeerID(obj.Message.PeerID)
 		_, err := vk.MessagesSend(message.Params)
 		if err != nil {
@@ -55,8 +55,8 @@ func NewMessageHandler(obj events.MessageNewObject, vk *api.VK, vk_user *api.VK,
 	const communityChatID = 2000000004
 	if obj.Message.PeerID != communityChatID { // Checks if message didn't come from community messages
 		switch {
-		case language.PostponedKeywordRegexCompiled.MatchString(strings.ToLower(obj.Message.Text)):
-			log.Printf(language.IncomingMessage, obj.Message.PeerID, obj.Message.Text)
+		case lng.PostponedKeywordRegexCompiled.MatchString(strings.ToLower(obj.Message.Text)):
+			log.Printf(lng.IncomingMessage, obj.Message.PeerID, obj.Message.Text)
 			getOtlozhka(obj, vk, vk_user, group)
 		}
 	}

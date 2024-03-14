@@ -12,7 +12,7 @@ import (
 
 const RandomId = 0
 
-var strings = lang.Lang.Message
+var lng = lang.Lang.Message
 
 func formatAttachments(attachment object.WallWallpostAttachment) string {
 	var attachmentString string
@@ -30,12 +30,12 @@ func formatAttachments(attachment object.WallWallpostAttachment) string {
 
 func getPublicationDate(postDate int) string {
 	t := time.Unix(int64(postDate), 0)
-	loc, err := time.LoadLocation("Europe/Moscow")
+	loc, err := time.LoadLocation(lng.Timezone)
 	if err != nil {
-		log.Fatal("Error loading timezone:", err)
+		log.Fatal(lng.ErrorLoadingTimeZone, err)
 	}
 	t = t.In(loc)
-	formattedTime := t.Format("02.01.2006 15:04:05 MSK")
+	formattedTime := t.Format(lng.TimeFormat)
 	return formattedTime
 }
 
@@ -44,15 +44,15 @@ func getMessageText(post object.WallWallpost) string {
 	// 1. Get publication date
 	const newline = "\n"
 	var msgText string
-	msgText += strings.MessagePostDate + getPublicationDate(post.Date) + newline
+	msgText += lng.MessagePostDate + getPublicationDate(post.Date) + newline
 	// 2. Get audio attachment info in case of it not attaching to the message properly(thanks, VK!)
 	audioObject := post.Attachments[0].Audio
 	if audioObject.ToAttachment() != "audio0_0" {
-		msgText += strings.MessagePostAudio + audioObject.Artist + "—" + audioObject.Title + newline
+		msgText += lng.MessagePostAudio + audioObject.Artist + "—" + audioObject.Title + newline
 	}
 	// 3. Get post text
 	if post.Text != "" {
-		msgText += strings.MessagePostText + post.Text + newline
+		msgText += lng.MessagePostText + post.Text + newline
 	}
 
 	return msgText

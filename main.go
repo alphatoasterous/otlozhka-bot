@@ -15,13 +15,13 @@ import (
 	"github.com/SevereCloud/vksdk/v2/events"
 )
 
-var language = lang.Lang.Main
+var lng = lang.Lang.Main
 
 func init() {
 	// Loading environment variables from .env file
 	err := godotenv.Load()
 	if err != nil {
-		log.Print(language.ErrorDotenvFailed)
+		log.Print(lng.ErrorDotenvFailed)
 	}
 
 }
@@ -55,7 +55,7 @@ func main() {
 	})
 
 	// Run Bots Long Poll
-	log.Println(language.StartLongPollMsg)
+	log.Println(lng.StartLongPollMsg)
 	if err := lp.Run(); err != nil {
 		log.Fatal(err)
 	}
