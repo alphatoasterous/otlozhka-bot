@@ -10,7 +10,6 @@ func GetGroupInfo(vk *api.VK) api.GroupsGetByIDResponse {
 	group, err := vk.GroupsGetByID(nil)
 	if err != nil {
 		log.Fatal(err)
-		return nil
 	}
 	return group
 }
