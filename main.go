@@ -50,7 +50,6 @@ func main() {
 
 	// Passing NewMessageHandler to a MessageNew event
 	lp.MessageNew(func(_ context.Context, obj events.MessageNewObject) {
-
 		handlers.NewMessageHandler(obj, vk, vk_user, group)
 	})
 
