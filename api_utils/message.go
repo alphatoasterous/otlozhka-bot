@@ -14,7 +14,7 @@ const RandomId = 0
 
 var lng = lang.Lang.Message
 
-func formatAttachments(attachment object.WallWallpostAttachment) string {
+func extractFormattedAttachmentsFromWallpost(attachment object.WallWallpostAttachment) string {
 	var attachmentString string
 	if api.FmtValue(attachment.Photo, 1) != "photo0_0" {
 		attachmentString += attachment.Photo.ToAttachment() + ","
@@ -64,7 +64,7 @@ func getMessageText(post object.WallWallpost) string {
 func CreateMessageSendBuilderByPost(post object.WallWallpost) *params.MessagesSendBuilder {
 	msg := params.NewMessagesSendBuilder()
 	msg.Message(getMessageText(post))
-	msg.Attachment(formatAttachments(post.Attachments[0]))
+	msg.Attachment(extractFormattedAttachmentsFromWallpost(post.Attachments[0]))
 	msg.RandomID(RandomId)
 	return msg
 }
