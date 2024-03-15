@@ -25,6 +25,9 @@ func formatAttachments(attachment object.WallWallpostAttachment) string {
 	if api.FmtValue(attachment.Audio, 1) != "audio0_0" {
 		attachmentString += attachment.Audio.ToAttachment() + ","
 	}
+	if api.FmtValue(attachment.Doc, 1) != "doc0_0" {
+		attachmentString += attachment.Doc.ToAttachment() + ","
+	}
 	return utils.RemoveTrailingComma(attachmentString)
 }
 
