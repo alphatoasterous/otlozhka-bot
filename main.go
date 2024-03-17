@@ -19,7 +19,6 @@ import (
 var lng = lang.Lang.Main
 
 func init() {
-
 	// Loading environment variables from a filename provided by arguments / default .env file
 	dotenvDefault := ".env"
 	dotenvFilename := flag.String("dotenv", dotenvDefault, "Specify dotenv filename")
@@ -34,27 +33,27 @@ func main() {
 	// Setting up user and community API instances
 	userToken := os.Getenv("OTLOZHKA_USER_TOKEN")
 	communityToken := os.Getenv("OTLOZHKA_COMMUNITY_TOKEN")
-	vk := api.NewVK(communityToken)
-	vk_user := api.NewVK(userToken)
-	vk.Limit, _ = utils.StringToInt(os.Getenv("OTLOZHKA_COMMUNITY_RATELIMIT"))
-	vk.EnableMessagePack()
-	vk.EnableZstd()
-	vk_user.Limit, _ = utils.StringToInt(os.Getenv("OTLOZHKA_USER_RATELIMIT"))
-	vk_user.EnableMessagePack()
-	vk_user.EnableZstd()
+	vkCommunity := api.NewVK(communityToken)
+	vkUser := api.NewVK(userToken)
+	vkCommunity.Limit, _ = utils.StringToInt(os.Getenv("OTLOZHKA_COMMUNITY_RATELIMIT"))
+	vkCommunity.EnableMessagePack()
+	vkCommunity.EnableZstd()
+	vkUser.Limit, _ = utils.StringToInt(os.Getenv("OTLOZHKA_USER_RATELIMIT"))
+	vkUser.EnableMessagePack()
+	vkUser.EnableZstd()
 
-	// Getting group information via community token
-	group := api_utils.GetGroupInfo(vk)[0]
+	// Getting group information via community VK instance
+	group := api_utils.GetGroupInfo(vkCommunity)[0]
 
 	// Setting up Long Poll
-	lp, err := longpoll.NewLongPoll(vk, group.ID)
+	lp, err := longpoll.NewLongPoll(vkCommunity, group.ID)
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	// Passing NewMessageHandler to a MessageNew event
 	lp.MessageNew(func(_ context.Context, obj events.MessageNewObject) {
-		handlers.NewMessageHandler(obj, vk, vk_user, group)
+		handlers.NewMessageHandler(obj, vkCommunity, vkUser, group)
 	})
 
 	// Run Bots Long Poll

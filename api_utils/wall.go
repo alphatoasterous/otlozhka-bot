@@ -18,12 +18,12 @@ func flattenWallpostArray(posts [][]object.WallWallpost) []object.WallWallpost {
 	return flattened
 }
 
-func GetAllPostponedWallposts(vk_user *api.VK, domain string) ([]object.WallWallpost, error) {
+func GetAllPostponedWallposts(vkUser *api.VK, domain string) ([]object.WallWallpost, error) {
 	// TODO: Create some storage for postponed posts.
 	var allPosts [][]object.WallWallpost
 	var offset int
 	for {
-		response, err := vk_user.WallGet(api.Params{"domain": domain, "offset": offset, "filter": "postponed"})
+		response, err := vkUser.WallGet(api.Params{"domain": domain, "offset": offset, "filter": "postponed"})
 		if err != nil {
 			log.Fatal(err)
 			return nil, err

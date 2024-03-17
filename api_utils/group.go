@@ -5,9 +5,9 @@ import (
 	"log"
 )
 
-func GetGroupInfo(vk *api.VK) api.GroupsGetByIDResponse {
+func GetGroupInfo(vkCommunity *api.VK) api.GroupsGetByIDResponse {
 	// GetGroupInfo gets information about the community/group page utilizing community token
-	group, err := vk.GroupsGetByID(nil)
+	group, err := vkCommunity.GroupsGetByID(nil)
 	if err != nil {
 		log.Fatal(err)
 	}
