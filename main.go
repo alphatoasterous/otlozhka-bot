@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"flag"
 	"github.com/SevereCloud/vksdk/v2/longpoll-bot"
 	"github.com/alphatoasterous/otlozhka-bot/api_utils"
 	"github.com/alphatoasterous/otlozhka-bot/handlers"
@@ -18,12 +19,15 @@ import (
 var lng = lang.Lang.Main
 
 func init() {
-	// Loading environment variables from .env file
-	err := godotenv.Load()
+
+	// Loading environment variables from a filename provided by arguments / default .env file
+	dotenvDefault := ".env"
+	dotenvFilename := flag.String("dotenv", dotenvDefault, "Specify dotenv filename")
+	flag.Parse()
+	err := godotenv.Load(*dotenvFilename)
 	if err != nil {
 		log.Print(lng.ErrorDotenvFailed)
 	}
-
 }
 
 func main() {

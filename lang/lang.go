@@ -1,6 +1,7 @@
 package lang
 
 import (
+	"flag"
 	"github.com/pelletier/go-toml/v2"
 	"log"
 	"os"
@@ -40,10 +41,10 @@ type (
 
 var Lang ProjectStrings
 
-const stringsFilePath = "strings.toml"
-
 func init() {
-	tomlFile, err := os.ReadFile(stringsFilePath)
+	stringsDefault := "strings.toml"
+	stringsFilename := flag.String("strings", stringsDefault, "Specify strings filename")
+	tomlFile, err := os.ReadFile(*stringsFilename)
 	if err != nil {
 		log.Fatal("Error reading strings.toml / Ошибка чтения strings.toml")
 	}
