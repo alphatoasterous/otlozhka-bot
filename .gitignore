@@ -25,3 +25,6 @@ go.work
 
 # Dotenv file
 .env
+
+# Build directory
+dist/
