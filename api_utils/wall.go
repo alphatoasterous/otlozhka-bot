@@ -23,16 +23,18 @@ func GetAllPostponedWallposts(vkUser *api.VK, domain string) ([]object.WallWallp
 	var allPosts [][]object.WallWallpost
 	var offset int
 	for {
-		response, err := vkUser.WallGet(api.Params{"domain": domain, "offset": offset, "filter": "postponed"})
+		const maxWallPostCount = 100
+		response, err := vkUser.WallGet(
+			api.Params{"domain": domain, "offset": offset, "filter": "postponed", "count": maxWallPostCount})
 		if err != nil {
 			log.Fatal(err)
 			return nil, err
 		}
 		allPosts = append(allPosts, response.Items)
-		if len(allPosts)*100 >= response.Count {
+		if len(allPosts)*maxWallPostCount >= response.Count {
 			break
 		}
-		offset += 100
+		offset += maxWallPostCount
 	}
 	return flattenWallpostArray(allPosts), nil
 }
