@@ -67,7 +67,9 @@ func getMessageText(post object.WallWallpost) string {
 func CreateMessageSendBuilderByPost(post object.WallWallpost) *params.MessagesSendBuilder {
 	msg := params.NewMessagesSendBuilder()
 	msg.Message(getMessageText(post))
-	msg.Attachment(extractFormattedAttachmentsFromWallpost(post.Attachments[0]))
+	if len(post.Attachments) > 0 {
+		msg.Attachment(extractFormattedAttachmentsFromWallpost(post.Attachments[0]))
+	}
 	msg.RandomID(RandomId)
 	return msg
 }
