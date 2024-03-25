@@ -30,12 +30,14 @@ func getPostponedPostsByPeerID(peerID int, vkCommunity *api.VK, vkUser *api.VK, 
 	}
 	foundPosts := api_utils.FindByFromID(posts, peerID)
 	if len(foundPosts) != 0 { // if posts found
-		message := api_utils.CreateMessageSendBuilderText(
-			utils.GetRandomItemFromStrArray(lng.PostponedPostsFound))
-		message.PeerID(peerID)
-		_, err := vkCommunity.MessagesSend(message.Params)
-		if err != nil {
-			log.Fatal(err)
+		if len(lng.PostponedPostsFound) != 0 { // if post found messages are defined
+			message := api_utils.CreateMessageSendBuilderText(
+				utils.GetRandomItemFromStrArray(lng.PostponedPostsFound)) // send random message to user
+			message.PeerID(peerID)
+			_, err := vkCommunity.MessagesSend(message.Params)
+			if err != nil {
+				log.Fatal(err)
+			}
 		}
 		for _, post := range foundPosts {
 			msg := api_utils.CreateMessageSendBuilderByPost(post)
