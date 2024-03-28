@@ -53,7 +53,6 @@ func flattenWallpostArray(posts [][]object.WallWallpost) []object.WallWallpost {
 }
 
 func GetAllPostponedWallposts(vkUser *api.VK, domain string) ([]object.WallWallpost, error) {
-	// TODO: Create some storage for postponed posts.
 	var allPosts [][]object.WallWallpost
 	var offset int
 	for {
@@ -73,10 +72,10 @@ func GetAllPostponedWallposts(vkUser *api.VK, domain string) ([]object.WallWallp
 	return flattenWallpostArray(allPosts), nil
 }
 
-func FindByFromID(posts []object.WallWallpost, fromID int) []object.WallWallpost {
+func getWallpostsByPeerID(peerID int, posts []object.WallWallpost) []object.WallWallpost {
 	var foundPosts []object.WallWallpost
 	for _, post := range posts {
-		if post.SignerID == fromID {
+		if post.SignerID == peerID {
 			foundPosts = append(foundPosts, post)
 		}
 	}
