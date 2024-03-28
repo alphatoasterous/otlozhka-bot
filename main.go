@@ -30,20 +30,25 @@ func init() {
 }
 
 func main() {
-	// Setting up user and community API instances
-	userToken := os.Getenv("OTLOZHKA_USER_TOKEN")
+	// Setting up community API instance
 	communityToken := os.Getenv("OTLOZHKA_COMMUNITY_TOKEN")
 	vkCommunity := api.NewVK(communityToken)
-	vkUser := api.NewVK(userToken)
 	vkCommunity.Limit, _ = utils.StringToInt(os.Getenv("OTLOZHKA_COMMUNITY_RATELIMIT"))
 	vkCommunity.EnableMessagePack()
 	vkCommunity.EnableZstd()
-	vkUser.Limit, _ = utils.StringToInt(os.Getenv("OTLOZHKA_USER_RATELIMIT"))
-	vkUser.EnableMessagePack()
-	vkUser.EnableZstd()
 
 	// Getting group information via community VK instance
 	group := api_utils.GetGroupInfo(vkCommunity)[0]
+	domain := group.ScreenName
+
+	// Setting up user API wallpost handler instance
+	userToken := os.Getenv("OTLOZHKA_USER_TOKEN")
+	keepAlive, _ := utils.StringToInt(os.Getenv("OTLOZHKA_STORAGE_KEEPALIVE"))
+	vkUser := api.NewVK(userToken)
+	vkUser.EnableMessagePack()
+	vkUser.EnableZstd()
+	vkUser.Limit, _ = utils.StringToInt(os.Getenv("OTLOZHKA_USER_RATELIMIT"))
+	wallpostStorage := handlers.NewWallpostStorage(int64(keepAlive))
 
 	// Setting up Long Poll
 	lp, err := longpoll.NewLongPoll(vkCommunity, group.ID)
@@ -53,7 +58,7 @@ func main() {
 
 	// Passing NewMessageHandler to a MessageNew event
 	lp.MessageNew(func(_ context.Context, obj events.MessageNewObject) {
-		handlers.NewMessageHandler(obj, vkCommunity, vkUser, group)
+		handlers.NewMessageHandler(obj, vkCommunity, vkUser, domain, wallpostStorage)
 	})
 
 	// Run Bots Long Poll
