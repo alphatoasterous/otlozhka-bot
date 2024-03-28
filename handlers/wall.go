@@ -30,7 +30,7 @@ func (wpStorage *WallpostStorage) GetAndUpdateWallpostStorage(vkUser *api.VK, do
 	defer wpStorage.mutex.Unlock()
 
 	currentTimestamp := time.Now().Unix()
-	if currentTimestamp-wpStorage.timestamp > wpStorage.keepAlive {
+	if currentTimestamp-wpStorage.timestamp >= wpStorage.keepAlive {
 		log.Println("WPStorage: Wallposts in wallpost storage are stale, updating...")
 		postponedPosts, err := GetAllPostponedWallposts(vkUser, domain)
 		if err != nil {
