@@ -43,20 +43,9 @@ func getPublicationDate(postDate int) string {
 }
 
 func getMessageText(post object.WallWallpost) string {
-	// Get beautiful-ish formatted string for message text
-	// 1. Get publication date
 	const newline = "\n"
 	var msgText string
 	msgText += lng.MessagePostDate + getPublicationDate(post.Date) + newline
-	// 2. Get audio attachment info in case of it not attaching to the message properly(thanks, VK!)
-	// weather update: after live testing it is deemed unnecessary. Remove it, future me.
-	/*
-		audioObject := post.Attachments[0].Audio
-		if audioObject.ToAttachment() != "audio0_0" {
-			msgText += lng.MessagePostAudio + audioObject.Artist + "—" + audioObject.Title + newline
-		}
-	*/
-	// 3. Get post text
 	if post.Text != "" {
 		msgText += lng.MessagePostText + post.Text + newline
 	}
