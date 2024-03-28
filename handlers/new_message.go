@@ -13,22 +13,7 @@ import (
 
 var lng = lang.Lang.NewMessageHandler
 
-func getPostponedPostsByPeerID(peerID int, vkCommunity *api.VK, vkUser *api.VK, domain string) {
-	// getPostponedPostsByPeerID retrieves postponed posts that match given peer ID.
-	//
-	// This function fetches postponed posts by the specified peer ID using the VK API.
-	// It requires a valid VK API community token, a VK user token, and the short link of the searchable group.
-	//
-	// Parameters:
-	//   - peerID: An integer representing the ID of the peer.
-	//   - vkCommunity: A pointer to an initialized VK instance with Community access token.
-	//   - vkUser: A pointer to an initialized VK instance with User access token.
-	//   - domain: Short address of the searchable community. Obtained via object.GroupsGroup.ScreenName.
-	posts, err := api_utils.GetAllPostponedWallposts(vkUser, domain)
-	if err != nil {
-		log.Fatal(err)
-	}
-	foundPosts := api_utils.FindByFromID(posts, peerID)
+func messagePosts(peerID int, vkCommunity *api.VK, foundPosts []object.WallWallpost) {
 	if len(foundPosts) != 0 { // if posts found
 		if len(lng.PostponedPostsFound) != 0 { // if post found messages are defined
 			message := api_utils.CreateMessageSendBuilderText(
@@ -63,13 +48,15 @@ func getPostponedPostsByPeerID(peerID int, vkCommunity *api.VK, vkUser *api.VK, 
 	}
 }
 
-func NewMessageHandler(obj events.MessageNewObject, vkCommunity *api.VK, vkUser *api.VK, group object.GroupsGroup) {
+func NewMessageHandler(obj events.MessageNewObject, vkCommunity *api.VK, vkUser *api.VK, domain string, storage *WallpostStorage) {
 	const communityChatID = 2000000004         // Community group chat
-	if obj.Message.PeerID != communityChatID { // Checks if message didn't come from community group chat
+	if obj.Message.PeerID != communityChatID { // Checks if message camen't from community group chat
 		switch {
 		case lng.PostponedKeywordRegexCompiled.MatchString(strings.ToLower(obj.Message.Text)):
 			log.Printf(lng.IncomingMessage, obj.Message.PeerID, obj.Message.Text)
-			getPostponedPostsByPeerID(obj.Message.PeerID, vkCommunity, vkUser, group.ScreenName)
+			posts := storage.GetAndUpdateWallpostStorage(vkUser, domain)
+			foundPosts := getWallpostsByPeerID(obj.Message.PeerID, posts)
+			messagePosts(obj.Message.PeerID, vkCommunity, foundPosts)
 		}
 	}
 }
