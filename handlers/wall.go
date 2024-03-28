@@ -72,7 +72,7 @@ func GetAllPostponedWallposts(vkUser *api.VK, domain string) ([]object.WallWallp
 	return flattenWallpostArray(allPosts), nil
 }
 
-func getWallpostsByPeerID(peerID int, posts []object.WallWallpost) []object.WallWallpost {
+func GetWallpostsByPeerID(peerID int, posts []object.WallWallpost) []object.WallWallpost {
 	var foundPosts []object.WallWallpost
 	for _, post := range posts {
 		if post.SignerID == peerID {
