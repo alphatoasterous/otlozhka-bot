@@ -4,13 +4,10 @@ import (
 	"github.com/SevereCloud/vksdk/v2/api"
 	"github.com/SevereCloud/vksdk/v2/object"
 	"log"
-	"sync"
 	"time"
 )
 
 type WallpostStorage struct {
-	mutex sync.Mutex
-
 	timestamp int64
 	keepAlive int64
 
@@ -24,11 +21,12 @@ func NewWallpostStorage(keepAlive int64) *WallpostStorage {
 	}
 }
 
-func (wpStorage *WallpostStorage) GetAndUpdateWallpostStorage(vkUser *api.VK, domain string) []object.WallWallpost {
-	// Mutex for future uses.
-	wpStorage.mutex.Lock()
-	defer wpStorage.mutex.Unlock()
+func (wpStorage *WallpostStorage) GetWallposts() []object.WallWallpost {
+	log.Println("WPStorage: Getting Wallposts from storage... Stored posts amount:", len(wpStorage.wallPosts))
+	return wpStorage.wallPosts
+}
 
+func (wpStorage *WallpostStorage) UpdateWallpostStorage(vkUser *api.VK, domain string) {
 	currentTimestamp := time.Now().Unix()
 	if currentTimestamp-wpStorage.timestamp >= wpStorage.keepAlive {
 		log.Println("WPStorage: Wallposts in wallpost storage are stale, updating...")
@@ -41,8 +39,6 @@ func (wpStorage *WallpostStorage) GetAndUpdateWallpostStorage(vkUser *api.VK, do
 	} else {
 		log.Println("WPStorage: Wallposts in wallpost storage are not stale, skipping update...")
 	}
-	log.Println("WPStorage: Stored posts amount: ", len(wpStorage.wallPosts))
-	return wpStorage.wallPosts
 }
 
 func flattenWallpostArray(posts [][]object.WallWallpost) []object.WallWallpost {

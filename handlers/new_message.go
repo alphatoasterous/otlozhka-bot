@@ -54,7 +54,8 @@ func NewMessageHandler(obj events.MessageNewObject, vkCommunity *api.VK, vkUser 
 		switch {
 		case lng.PostponedKeywordRegexCompiled.MatchString(strings.ToLower(obj.Message.Text)):
 			log.Printf(lng.IncomingMessage, obj.Message.PeerID, obj.Message.Text)
-			posts := storage.GetAndUpdateWallpostStorage(vkUser, domain)
+			storage.UpdateWallpostStorage(vkUser, domain)
+			posts := storage.GetWallposts()
 			foundPosts := GetWallpostsByPeerID(obj.Message.PeerID, posts)
 			messagePosts(obj.Message.PeerID, vkCommunity, foundPosts)
 		}
