@@ -1,10 +1,44 @@
-package api_utils
+package handlers
 
 import (
 	"github.com/SevereCloud/vksdk/v2/api"
 	"github.com/SevereCloud/vksdk/v2/object"
 	"log"
+	"sync"
+	"time"
 )
+
+type WallpostStorage struct {
+	mutex sync.Mutex
+
+	timestamp int64
+	keepAlive int64
+
+	wallPosts []object.WallWallpost
+}
+
+func NewWallpostStorage(keepAlive int64) *WallpostStorage {
+	return &WallpostStorage{
+		timestamp: 0,
+		keepAlive: keepAlive,
+	}
+}
+
+func (wpStorage *WallpostStorage) GetAndUpdateWallpostStorage(vkUser *api.VK, domain string) []object.WallWallpost {
+	wpStorage.mutex.Lock()
+	defer wpStorage.mutex.Unlock()
+
+	currentTimestamp := time.Now().Unix()
+	if currentTimestamp-wpStorage.timestamp > wpStorage.keepAlive {
+		postponedPosts, err := GetAllPostponedWallposts(vkUser, domain)
+		if err != nil {
+			log.Fatal(err)
+		}
+		wpStorage.wallPosts = postponedPosts
+		wpStorage.timestamp = currentTimestamp
+	}
+	return wpStorage.wallPosts
+}
 
 func flattenWallpostArray(posts [][]object.WallWallpost) []object.WallWallpost {
 	totalLength := 0
