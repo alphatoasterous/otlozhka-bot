@@ -99,7 +99,7 @@ func init() {
 			log.Fatal().Err(err).Msgf("Error writing marshalled BotConfig to a %s", *configFilename)
 		}
 	} else {
-		log.Warn().Msgf("%s does exist, unmarshalling it", *configFilename)
+		log.Debug().Msgf("%s does exist, unmarshalling it", *configFilename)
 		tomlFile, err := os.ReadFile(*configFilename)
 		if err != nil {
 			log.Fatal().Err(err).Msgf("Error reading %s", *configFilename)
@@ -109,4 +109,9 @@ func init() {
 			log.Fatal().Err(err).Msgf("Error unmarshalling %s", *configFilename)
 		}
 	}
+
+	if BotConfig.Main.UserToken == "" || BotConfig.Main.CommunityToken == "" {
+		log.Fatal().Msg("No UserToken or CommunityToken provided")
+	}
+
 }
