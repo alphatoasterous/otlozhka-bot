@@ -4,7 +4,7 @@ import (
 	"github.com/SevereCloud/vksdk/v2/api"
 	"github.com/SevereCloud/vksdk/v2/api/params"
 	"github.com/SevereCloud/vksdk/v2/object"
-	"github.com/alphatoasterous/otlozhka-bot/lang"
+	"github.com/alphatoasterous/otlozhka-bot/configs"
 	"github.com/alphatoasterous/otlozhka-bot/utils"
 	"log"
 	"time"
@@ -12,7 +12,7 @@ import (
 
 const RandomId = 0
 
-var lng = lang.Lang.Message
+var lng = configs.Lang.Message
 
 func extractFormattedAttachmentsFromWallpost(attachment object.WallWallpostAttachment) string {
 	var attachmentString string

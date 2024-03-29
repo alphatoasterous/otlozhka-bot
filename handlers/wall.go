@@ -22,23 +22,34 @@ func NewWallpostStorage(keepAlive int64) *WallpostStorage {
 }
 
 func (wpStorage *WallpostStorage) GetWallposts() []object.WallWallpost {
-	log.Println("WPStorage: Getting Wallposts from storage... Stored posts amount:", len(wpStorage.wallPosts))
+	log.Println("WPStorage: Getting Wallposts from storage... Stored posts amount:", wpStorage.GetWallpostCount())
 	return wpStorage.wallPosts
 }
 
-func (wpStorage *WallpostStorage) UpdateWallpostStorage(vkUser *api.VK, domain string) {
+func (wpStorage *WallpostStorage) GetWallpostCount() int {
+	return len(wpStorage.wallPosts)
+}
+
+func (wpStorage *WallpostStorage) CheckWallpostStorageNeedsUpdate() bool {
 	currentTimestamp := time.Now().Unix()
 	if currentTimestamp-wpStorage.timestamp >= wpStorage.keepAlive {
-		log.Println("WPStorage: Wallposts in wallpost storage are stale, updating...")
-		postponedPosts, err := GetAllPostponedWallposts(vkUser, domain)
-		if err != nil {
-			log.Fatal(err)
-		}
-		wpStorage.wallPosts = postponedPosts
-		wpStorage.timestamp = currentTimestamp
+		log.Println("WPStorage: Wallposts in wallpost storage are stale")
+		return true
 	} else {
-		log.Println("WPStorage: Wallposts in wallpost storage are not stale, skipping update...")
+		log.Println("WPStorage: Wallposts in wallpost storage are not stale")
+		return false
 	}
+}
+
+func (wpStorage *WallpostStorage) UpdateWallpostStorage(vkUser *api.VK, domain string) {
+
+	postponedPosts, err := GetAllPostponedWallposts(vkUser, domain)
+	if err != nil {
+		log.Fatal(err)
+	}
+	wpStorage.wallPosts = postponedPosts
+	wpStorage.timestamp = time.Now().Unix()
+
 }
 
 func flattenWallpostArray(posts [][]object.WallWallpost) []object.WallWallpost {

@@ -5,8 +5,8 @@ import (
 	"flag"
 	"github.com/SevereCloud/vksdk/v2/longpoll-bot"
 	"github.com/alphatoasterous/otlozhka-bot/api_utils"
+	"github.com/alphatoasterous/otlozhka-bot/configs"
 	"github.com/alphatoasterous/otlozhka-bot/handlers"
-	"github.com/alphatoasterous/otlozhka-bot/lang"
 	"github.com/alphatoasterous/otlozhka-bot/utils"
 	"github.com/joho/godotenv"
 	"log"
@@ -16,7 +16,7 @@ import (
 	"github.com/SevereCloud/vksdk/v2/events"
 )
 
-var lng = lang.Lang.Main
+var lng = configs.Lang.Main
 
 func init() {
 	// Loading environment variables from a filename provided by arguments / default .env file
@@ -37,18 +37,21 @@ func main() {
 	vkCommunity.EnableMessagePack()
 	vkCommunity.EnableZstd()
 
-	// Getting group information via community VK instance
-	group := api_utils.GetGroupInfo(vkCommunity)[0]
-	domain := group.ScreenName
-
-	// Setting up user API wallpost handler instance
+	// Setting up user API instance
 	userToken := os.Getenv("OTLOZHKA_USER_TOKEN")
-	keepAlive, _ := utils.StringToInt(os.Getenv("OTLOZHKA_STORAGE_KEEPALIVE"))
 	vkUser := api.NewVK(userToken)
 	vkUser.EnableMessagePack()
 	vkUser.EnableZstd()
 	vkUser.Limit, _ = utils.StringToInt(os.Getenv("OTLOZHKA_USER_RATELIMIT"))
+
+	// Setting up wallpost storage
+	keepAlive, _ := utils.StringToInt(os.Getenv("OTLOZHKA_STORAGE_KEEPALIVE"))
 	wallpostStorage := handlers.NewWallpostStorage(int64(keepAlive))
+
+	// Getting group information via community VK instance
+	group := api_utils.GetGroupInfo(vkCommunity)[0]
+	domain := group.ScreenName
+	groupManagerIDs := api_utils.GetGroupManagerIDs(vkUser, domain)
 
 	// Setting up Long Poll
 	lp, err := longpoll.NewLongPoll(vkCommunity, group.ID)
@@ -58,7 +61,7 @@ func main() {
 
 	// Passing NewMessageHandler to a MessageNew event
 	lp.MessageNew(func(_ context.Context, obj events.MessageNewObject) {
-		handlers.NewMessageHandler(obj, vkCommunity, vkUser, domain, wallpostStorage)
+		handlers.NewMessageHandler(obj, vkCommunity, vkUser, domain, groupManagerIDs, wallpostStorage)
 	})
 
 	// Run Bots Long Poll
