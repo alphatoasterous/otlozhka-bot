@@ -42,14 +42,12 @@ type (
 	}
 
 	compiledRegexes struct {
-		PostponedKeyword *regexp.Regexp
-		UpdateStorage    *regexp.Regexp
+		Otlozhka      *regexp.Regexp
+		UpdateStorage *regexp.Regexp
 	}
 )
 
 func DefaultBotConfiguration() BotConfiguration {
-	const OtlozhkaRegex = "отложк[ауе]"
-	const UpdateStorageRegex = "обнови"
 	return BotConfiguration{
 
 		Main: mainConfig{
@@ -65,16 +63,12 @@ func DefaultBotConfiguration() BotConfiguration {
 			Timezone:      "Europe/Moscow",
 		},
 		MessageHandler: messageHandlerConfig{
-			OtlozhkaRegex:             OtlozhkaRegex,
-			UpdateStorageRegex:        UpdateStorageRegex,
+			OtlozhkaRegex:             "отложк[ауе]",
+			UpdateStorageRegex:        "обнови",
 			StorageUpdatedMsgs:        []string{"Хранилище синхронизировано. Следующее обновление через 15 минут."},
 			StorageUpdatedCommendMsgs: []string{"Хранилище синхронизировано. Спасибо за Ваш труд!"},
 			PostponedPostsFoundMsgs:   []string{""},
 			NoPostponedPostsFoundMsgs: []string{"Отложенных постов не найдено."},
-		},
-		CompiledRegexes: compiledRegexes{
-			PostponedKeyword: regexp.MustCompile(OtlozhkaRegex),
-			UpdateStorage:    regexp.MustCompile(UpdateStorageRegex),
 		},
 	}
 }
@@ -113,5 +107,8 @@ func init() {
 	if BotConfig.Main.UserToken == "" || BotConfig.Main.CommunityToken == "" {
 		log.Fatal().Msg("No UserToken or CommunityToken provided")
 	}
+
+	BotConfig.CompiledRegexes.Otlozhka = regexp.MustCompile(BotConfig.MessageHandler.OtlozhkaRegex)
+	BotConfig.CompiledRegexes.UpdateStorage = regexp.MustCompile(BotConfig.MessageHandler.UpdateStorageRegex)
 
 }
