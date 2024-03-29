@@ -13,3 +13,28 @@ func GetGroupInfo(vkCommunity *api.VK) api.GroupsGetByIDResponse {
 	}
 	return group
 }
+
+func IsManagerWithRights(role string) bool {
+	switch role {
+	case
+		"editor",
+		"administrator",
+		"creator":
+		return true
+	}
+	return false
+}
+
+func GetGroupManagerIDs(vkUser *api.VK, domain string) []int {
+	groupManagers, err := vkUser.GroupsGetMembersFilterManagers(api.Params{"group_id": domain})
+	if err != nil {
+		log.Fatal(err)
+	}
+	groupManagerIDs := make([]int, 0, len(groupManagers.Items))
+	for _, groupManager := range groupManagers.Items {
+		if IsManagerWithRights(groupManager.Role) {
+			groupManagerIDs = append(groupManagerIDs, groupManager.ID)
+		}
+	}
+	return groupManagerIDs
+}

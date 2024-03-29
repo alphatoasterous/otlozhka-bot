@@ -1,4 +1,4 @@
-package lang
+package configs
 
 import (
 	"flag"
@@ -23,6 +23,8 @@ type (
 		IncomingMessage               string
 		PostponedKeywordRegex         string
 		PostponedKeywordRegexCompiled *regexp.Regexp
+		UpdateStorageRegex            string
+		UpdateStorageCompiled         *regexp.Regexp
 		PostponedPostsFound           []string
 		NoPostponedPostsFound         []string
 
@@ -46,12 +48,24 @@ func init() {
 	stringsFilename := flag.String("strings", stringsDefault, "Specify strings filename")
 	tomlFile, err := os.ReadFile(*stringsFilename)
 	if err != nil {
-		log.Fatal("Error reading strings.toml / Ошибка чтения strings.toml")
+		log.Fatal("Error reading strings.toml")
 	}
 	err = toml.Unmarshal(tomlFile, &Lang)
 	if err != nil {
-		log.Fatal("Error parsing strings.toml / Ошибка парсинга strings.toml")
+		log.Fatal("Error parsing strings.toml")
 	}
-	Lang.NewMessageHandler.PostponedKeywordRegexCompiled =
-		regexp.MustCompile(Lang.NewMessageHandler.PostponedKeywordRegex)
+
+	// TODO: func verifyConfig
+	if Lang.NewMessageHandler.PostponedKeywordRegex != "" {
+		Lang.NewMessageHandler.PostponedKeywordRegexCompiled =
+			regexp.MustCompile(Lang.NewMessageHandler.PostponedKeywordRegex)
+	} else {
+		log.Fatal("No postponed post keyword defined in strings.toml")
+	}
+	if Lang.NewMessageHandler.UpdateStorageRegex != "" {
+		Lang.NewMessageHandler.UpdateStorageCompiled =
+			regexp.MustCompile(Lang.NewMessageHandler.UpdateStorageRegex)
+	} else {
+		log.Fatal("No update storage keyword defined in strings.toml")
+	}
 }

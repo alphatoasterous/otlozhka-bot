@@ -5,6 +5,7 @@ StartLongPollMsg = "Запускаем Long Poll"
 [newMessageHandler]
 IncomingMessage = "Входящее сообщение[id%d]: %s"
 PostponedKeywordRegex = "отложк[ауе]"
+UpdateStorageRegex = "обнови"
 PostponedPostsFound = ["Нашёл отложку, попробую-попытаюсь объяснить:", "Отложке быть!", "Получите, распишитесь:"]
 NoPostponedPostsFound = ["Отложки не найдено.", "Не нашёл твою отложку. Тренируйся и приходи завтра!", "отложки нема"]
 ErrorPostponedPostMessageFailed = "Тут должна была быть информация об отложенном посте, но её своровали инопланетяне/сервера ВКонтакте, лол!"
