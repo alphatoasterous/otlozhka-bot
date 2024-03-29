@@ -1,0 +1,23 @@
+[Main]
+UserToken = ''
+CommunityToken = ''
+CommunityAPIRateLimit = 5
+UserAPIRateLimit = 1
+StorageKeepAlive = 900
+
+[MessageBuilder]
+MessageFormat = "📅 : %s\n📝: %s"
+TimeFormat = '02.01.2006 15:04:05'
+Timezone = 'Europe/Moscow'
+
+[MessageHandler]
+OtlozhkaRegex = 'отложк[ауе]'
+UpdateStorageRegex = 'обнови'
+StorageUpdatedMsgs = ['Хранилище синхронизировано. Следующее обновление через 15 минут.']
+StorageUpdatedCommendMsgs = ['Хранилище синхронизировано. Спасибо за Ваш труд!']
+PostponedPostsFoundMsgs = ['']
+NoPostponedPostsFoundMsgs = ['Отложенных постов не найдено.']
+
+[CompiledRegexes]
+PostponedKeyword = 'отложк[ауе]'
+UpdateStorage = 'обнови'
