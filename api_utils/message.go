@@ -1,18 +1,19 @@
 package api_utils
 
 import (
+	"fmt"
 	"github.com/SevereCloud/vksdk/v2/api"
 	"github.com/SevereCloud/vksdk/v2/api/params"
 	"github.com/SevereCloud/vksdk/v2/object"
-	"github.com/alphatoasterous/otlozhka-bot/configs"
+	"github.com/alphatoasterous/otlozhka-bot/config"
 	"github.com/alphatoasterous/otlozhka-bot/utils"
-	"log"
+	"github.com/rs/zerolog/log"
 	"time"
 )
 
 const RandomId = 0
 
-var lng = configs.Lang.Message
+var messageBuilderConfig = config.BotConfig.MessageBuilder
 
 func extractFormattedAttachmentsFromWallpost(attachment object.WallWallpostAttachment) string {
 	var attachmentString string
@@ -33,24 +34,17 @@ func extractFormattedAttachmentsFromWallpost(attachment object.WallWallpostAttac
 
 func getPublicationDate(postDate int) string {
 	t := time.Unix(int64(postDate), 0)
-	loc, err := time.LoadLocation(lng.Timezone)
+	loc, err := time.LoadLocation(messageBuilderConfig.Timezone)
 	if err != nil {
-		log.Fatal(lng.ErrorLoadingTimeZone, err)
+		log.Fatal().Err(err).Msg("Error loading timezone")
 	}
 	t = t.In(loc)
-	formattedTime := t.Format(lng.TimeFormat)
+	formattedTime := t.Format(messageBuilderConfig.TimeFormat)
 	return formattedTime
 }
 
 func getMessageText(post object.WallWallpost) string {
-	const newline = "\n"
-	var msgText string
-	msgText += lng.MessagePostDate + getPublicationDate(post.Date) + newline
-	if post.Text != "" {
-		msgText += lng.MessagePostText + post.Text + newline
-	}
-
-	return msgText
+	return fmt.Sprintf(messageBuilderConfig.MessageFormat, getPublicationDate(post.Date), post.Text)
 }
 
 func CreateMessageSendBuilderByPost(post object.WallWallpost) *params.MessagesSendBuilder {

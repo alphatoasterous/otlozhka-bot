@@ -17,11 +17,11 @@ type (
 	}
 
 	mainConfig struct {
-		userToken             string
-		communityToken        string
-		communityAPIRateLimit int
-		userAPIRateLimit      int
-		storageKeepAlive      int
+		UserToken             string
+		CommunityToken        string
+		CommunityAPIRateLimit int
+		UserAPIRateLimit      int
+		StorageKeepAlive      int
 	}
 
 	messageBuilderConfig struct {
@@ -53,11 +53,11 @@ func DefaultBotConfiguration() BotConfiguration {
 	return BotConfiguration{
 
 		Main: mainConfig{
-			userToken:             "",
-			communityToken:        "",
-			communityAPIRateLimit: 5,
-			userAPIRateLimit:      1,
-			storageKeepAlive:      900,
+			UserToken:             "",
+			CommunityToken:        "",
+			CommunityAPIRateLimit: 5,
+			UserAPIRateLimit:      1,
+			StorageKeepAlive:      900,
 		},
 		MessageBuilder: messageBuilderConfig{
 			MessageFormat: "📅 : %s\n📝: %s",

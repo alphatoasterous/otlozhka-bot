@@ -2,51 +2,43 @@ package main
 
 import (
 	"context"
-	"flag"
 	"github.com/SevereCloud/vksdk/v2/longpoll-bot"
 	"github.com/alphatoasterous/otlozhka-bot/api_utils"
-	"github.com/alphatoasterous/otlozhka-bot/configs"
+	"github.com/alphatoasterous/otlozhka-bot/config"
 	"github.com/alphatoasterous/otlozhka-bot/handlers"
-	"github.com/alphatoasterous/otlozhka-bot/utils"
-	"github.com/joho/godotenv"
-	"log"
+	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
 	"os"
 
 	"github.com/SevereCloud/vksdk/v2/api"
 	"github.com/SevereCloud/vksdk/v2/events"
 )
 
-var lng = configs.Lang.Main
-
-func init() {
-	// Loading environment variables from a filename provided by arguments / default .env file
-	dotenvDefault := ".env"
-	dotenvFilename := flag.String("dotenv", dotenvDefault, "Specify dotenv filename")
-	flag.Parse()
-	err := godotenv.Load(*dotenvFilename)
-	if err != nil {
-		log.Print(lng.ErrorDotenvFailed)
-	}
-}
-
 func main() {
+	// Setting up zerolog logger
+	zerolog.TimeFieldFormat = zerolog.TimeFormatUnix
+	log.Info().Msg("Starting up otlozhka-bot...")
+	botConfig := config.BotConfig.Main
+
 	// Setting up community API instance
-	communityToken := os.Getenv("OTLOZHKA_COMMUNITY_TOKEN")
-	vkCommunity := api.NewVK(communityToken)
-	vkCommunity.Limit, _ = utils.StringToInt(os.Getenv("OTLOZHKA_COMMUNITY_RATELIMIT"))
+	vkCommunity := api.NewVK(botConfig.CommunityToken)
+	vkCommunity.Limit = botConfig.CommunityAPIRateLimit
 	vkCommunity.EnableMessagePack()
 	vkCommunity.EnableZstd()
+	log.Debug().Msg("Community API instance set up")
 
 	// Setting up user API instance
-	userToken := os.Getenv("OTLOZHKA_USER_TOKEN")
+	userToken := os.Getenv(botConfig.UserToken)
 	vkUser := api.NewVK(userToken)
 	vkUser.EnableMessagePack()
 	vkUser.EnableZstd()
-	vkUser.Limit, _ = utils.StringToInt(os.Getenv("OTLOZHKA_USER_RATELIMIT"))
+	vkUser.Limit = botConfig.UserAPIRateLimit
+	log.Debug().Msg("User API instance set up")
 
 	// Setting up wallpost storage
-	keepAlive, _ := utils.StringToInt(os.Getenv("OTLOZHKA_STORAGE_KEEPALIVE"))
-	wallpostStorage := handlers.NewWallpostStorage(int64(keepAlive))
+	keepAlive := botConfig.StorageKeepAlive
+	wallpostStorage := handlers.NewWallpostStorage(keepAlive)
+	log.Debug().Msg("Wallpost Storage instance set up")
 
 	// Getting group information via community VK instance
 	group := api_utils.GetGroupInfo(vkCommunity)[0]
@@ -56,8 +48,9 @@ func main() {
 	// Setting up Long Poll
 	lp, err := longpoll.NewLongPoll(vkCommunity, group.ID)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal().Err(err)
 	}
+	log.Debug().Msg("Long Poll set up")
 
 	// Passing NewMessageHandler to a MessageNew event
 	lp.MessageNew(func(_ context.Context, obj events.MessageNewObject) {
@@ -65,8 +58,8 @@ func main() {
 	})
 
 	// Run Bots Long Poll
-	log.Println(lng.StartLongPollMsg)
+	log.Info().Msg("otlozhka-bot set, running Long Poll")
 	if err := lp.Run(); err != nil {
-		log.Fatal(err)
+		log.Fatal().Err(err)
 	}
 }
