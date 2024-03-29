@@ -40,7 +40,7 @@ func NewMessageHandler(obj events.MessageNewObject, vkCommunity *api.VK,
 	const communityChatID = 2000000004         // Community group chat
 	if obj.Message.PeerID != communityChatID { // Checks if message camen't from community group chat
 		switch {
-		case regexes.PostponedKeyword.MatchString(strings.ToLower(obj.Message.Text)):
+		case regexes.Otlozhka.MatchString(strings.ToLower(obj.Message.Text)):
 			log.Printf("Incoming message[id%d]: %s", obj.Message.PeerID, obj.Message.Text)
 			if storage.CheckWallpostStorageNeedsUpdate() {
 				storage.UpdateWallpostStorage(vkUser, domain)
