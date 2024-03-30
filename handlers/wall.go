@@ -3,7 +3,7 @@ package handlers
 import (
 	"github.com/SevereCloud/vksdk/v2/api"
 	"github.com/SevereCloud/vksdk/v2/object"
-	"log"
+	"github.com/rs/zerolog/log"
 	"time"
 )
 
@@ -14,15 +14,15 @@ type WallpostStorage struct {
 	wallPosts []object.WallWallpost
 }
 
-func NewWallpostStorage(keepAlive int64) *WallpostStorage {
+func NewWallpostStorage(keepAlive int) *WallpostStorage {
 	return &WallpostStorage{
 		timestamp: 0,
-		keepAlive: keepAlive,
+		keepAlive: int64(keepAlive),
 	}
 }
 
 func (wpStorage *WallpostStorage) GetWallposts() []object.WallWallpost {
-	log.Println("WPStorage: Getting Wallposts from storage... Stored posts amount:", wpStorage.GetWallpostCount())
+	log.Print("WPStorage: Getting Wallposts from storage... Stored posts amount:", wpStorage.GetWallpostCount())
 	return wpStorage.wallPosts
 }
 
@@ -33,10 +33,10 @@ func (wpStorage *WallpostStorage) GetWallpostCount() int {
 func (wpStorage *WallpostStorage) CheckWallpostStorageNeedsUpdate() bool {
 	currentTimestamp := time.Now().Unix()
 	if currentTimestamp-wpStorage.timestamp >= wpStorage.keepAlive {
-		log.Println("WPStorage: Wallposts in wallpost storage are stale")
+		log.Info().Msg("WPStorage: Wallposts in wallpost storage are stale")
 		return true
 	} else {
-		log.Println("WPStorage: Wallposts in wallpost storage are not stale")
+		log.Info().Msg("WPStorage: Wallposts in wallpost storage are not stale")
 		return false
 	}
 }
@@ -45,7 +45,7 @@ func (wpStorage *WallpostStorage) UpdateWallpostStorage(vkUser *api.VK, domain s
 
 	postponedPosts, err := GetAllPostponedWallposts(vkUser, domain)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal().Err(err)
 	}
 	wpStorage.wallPosts = postponedPosts
 	wpStorage.timestamp = time.Now().Unix()
@@ -72,7 +72,7 @@ func GetAllPostponedWallposts(vkUser *api.VK, domain string) ([]object.WallWallp
 		response, err := vkUser.WallGet(
 			api.Params{"domain": domain, "offset": offset, "filter": "postponed", "count": maxWallPostCount})
 		if err != nil {
-			log.Fatal(err)
+			log.Fatal().Err(err)
 			return nil, err
 		}
 		allPosts = append(allPosts, response.Items)

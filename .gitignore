@@ -23,8 +23,10 @@ go.work
 # IDEA
 .idea/
 
-# Dotenv file
-.env
+# Config file
+config.toml
 
 # Build directory
 dist/
+
+
