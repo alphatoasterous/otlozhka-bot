@@ -65,9 +65,9 @@ func NewMessageHandler(obj events.MessageNewObject, vkCommunity *api.VK,
 				storage.UpdateWallpostStorage(vkUser, domain)
 				message := api_utils.CreateMessageSendBuilderText("")
 				if storage.GetWallpostCount()-previousWallpostCount >= 10 {
-					message.Message("Отложка обновлена. Спасибо за вашу работу!")
+					message.Message(utils.GetRandomItemFromStrArray(messages.StorageUpdatedCommendMsgs))
 				} else {
-					message.Message("Отложка обновлена.")
+					message.Message(utils.GetRandomItemFromStrArray(messages.StorageUpdatedMsgs))
 				}
 				message.PeerID(obj.Message.PeerID)
 				_, err := vkCommunity.MessagesSend(message.Params)
