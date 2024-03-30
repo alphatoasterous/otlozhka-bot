@@ -41,6 +41,9 @@ builds:
       - windows
       - darwin
 
+archives:
+  - format: binary
+
 
 changelog:
   sort: asc
