@@ -2,16 +2,14 @@ package main
 
 import (
 	"context"
+	"github.com/SevereCloud/vksdk/v2/api"
+	"github.com/SevereCloud/vksdk/v2/events"
 	"github.com/SevereCloud/vksdk/v2/longpoll-bot"
 	"github.com/alphatoasterous/otlozhka-bot/api_utils"
 	"github.com/alphatoasterous/otlozhka-bot/config"
 	"github.com/alphatoasterous/otlozhka-bot/handlers"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
-	"os"
-
-	"github.com/SevereCloud/vksdk/v2/api"
-	"github.com/SevereCloud/vksdk/v2/events"
 )
 
 func main() {
@@ -28,22 +26,22 @@ func main() {
 	log.Debug().Msg("Community API instance set up")
 
 	// Setting up user API instance
-	userToken := os.Getenv(botConfig.UserToken)
-	vkUser := api.NewVK(userToken)
+	vkUser := api.NewVK(botConfig.UserToken)
 	vkUser.EnableMessagePack()
 	vkUser.EnableZstd()
 	vkUser.Limit = botConfig.UserAPIRateLimit
 	log.Debug().Msg("User API instance set up")
 
-	// Setting up wallpost storage
-	keepAlive := botConfig.StorageKeepAlive
-	wallpostStorage := handlers.NewWallpostStorage(keepAlive)
-	log.Debug().Msg("Wallpost Storage instance set up")
-
 	// Getting group information via community VK instance
 	group := api_utils.GetGroupInfo(vkCommunity)[0]
 	domain := group.ScreenName
 	groupManagerIDs := api_utils.GetGroupManagerIDs(vkUser, domain)
+
+	// Setting up wallpost storage
+	keepAlive := botConfig.StorageKeepAlive
+	wallpostStorage := handlers.NewWallpostStorage(keepAlive)
+	wallpostStorage.UpdateWallpostStorage(vkUser, domain)
+	log.Debug().Msg("Wallpost Storage instance set up")
 
 	// Setting up Long Poll
 	lp, err := longpoll.NewLongPoll(vkCommunity, group.ID)
