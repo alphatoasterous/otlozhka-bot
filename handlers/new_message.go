@@ -37,30 +37,13 @@ func messagePosts(peerID int, vkCommunity *api.VK, foundPosts []object.WallWallp
 
 func NewMessageHandler(obj events.MessageNewObject, vkCommunity *api.VK,
 	vkUser *api.VK, domain string, groupManagerIDs []int, storage *WallpostStorage) {
-	const communityChatID = 2000000004         // Community group chat
+	const communityChatID = 2000000004 // Community group chat
+	incomingMessageText := strings.ToLower(obj.Message.Text)
 	if obj.Message.PeerID != communityChatID { // Checks if message camen't from community group chat
-		switch {
-		case regexes.Otlozhka.MatchString(strings.ToLower(obj.Message.Text)):
-			log.Printf("Incoming message[id%d]: %s", obj.Message.PeerID, obj.Message.Text)
-			if storage.CheckWallpostStorageNeedsUpdate() {
-				storage.UpdateWallpostStorage(vkUser, domain)
-			}
-			posts := storage.GetWallposts()
-			foundPosts := GetWallpostsByPeerID(obj.Message.PeerID, posts)
-			if len(foundPosts) != 0 {
-				messagePosts(obj.Message.PeerID, vkCommunity, foundPosts)
-			} else {
-				message := api_utils.CreateMessageSendBuilderText(
-					utils.GetRandomItemFromStrArray(messages.NoPostponedPostsFoundMsgs))
-				message.PeerID(obj.Message.PeerID)
-				_, err := vkCommunity.MessagesSend(message.Params)
-				if err != nil {
-					log.Fatal().Err(err)
-				}
-			}
-		case regexes.UpdateStorage.MatchString(strings.ToLower(obj.Message.Text)):
-			if slices.Contains(groupManagerIDs, obj.Message.PeerID) {
-				log.Debug().Msgf("Incoming message[id%d]: %s", obj.Message.PeerID, obj.Message.Text)
+		if slices.Contains(groupManagerIDs, obj.Message.PeerID) { // If message came from community management
+			switch {
+			case regexes.UpdateStorage.MatchString(incomingMessageText):
+				log.Debug().Msgf("Update storage message[id%d]: %s", obj.Message.PeerID, obj.Message.Text)
 				previousWallpostCount := storage.GetWallpostCount()
 				storage.UpdateWallpostStorage(vkUser, domain)
 				message := api_utils.CreateMessageSendBuilderText("")
@@ -74,6 +57,40 @@ func NewMessageHandler(obj events.MessageNewObject, vkCommunity *api.VK,
 				if err != nil {
 					log.Fatal().Err(err)
 				}
+			case regexes.PrintStorage.MatchString(incomingMessageText):
+				log.Debug().Msgf("Update storage message[id%d]: %s", obj.Message.PeerID, obj.Message.Text)
+				formattedCalendar, err := api_utils.GetFormattedCalendar(storage.GetWallposts(), "Europe/Moscow")
+				if err != nil {
+					log.Fatal().Err(err)
+				}
+				message := api_utils.CreateMessageSendBuilderText(formattedCalendar)
+				message.PeerID(obj.Message.PeerID)
+				_, err = vkCommunity.MessagesSend(message.Params)
+				if err != nil {
+					log.Fatal().Err(err)
+				}
+			}
+		}
+
+	}
+
+	switch {
+	case regexes.Otlozhka.MatchString(incomingMessageText):
+		log.Printf("Incoming message[id%d]: %s", obj.Message.PeerID, obj.Message.Text)
+		if storage.CheckWallpostStorageNeedsUpdate() {
+			storage.UpdateWallpostStorage(vkUser, domain)
+		}
+		posts := storage.GetWallposts()
+		foundPosts := GetWallpostsByPeerID(obj.Message.PeerID, posts)
+		if len(foundPosts) != 0 {
+			messagePosts(obj.Message.PeerID, vkCommunity, foundPosts)
+		} else {
+			message := api_utils.CreateMessageSendBuilderText(
+				utils.GetRandomItemFromStrArray(messages.NoPostponedPostsFoundMsgs))
+			message.PeerID(obj.Message.PeerID)
+			_, err := vkCommunity.MessagesSend(message.Params)
+			if err != nil {
+				log.Fatal().Err(err)
 			}
 		}
 	}

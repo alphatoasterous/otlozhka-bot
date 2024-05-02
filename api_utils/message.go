@@ -16,7 +16,7 @@ const RandomId = 0
 
 var messageBuilderConfig = config.BotConfig.MessageBuilder
 
-func getFormattedPostPublicationDates(posts []object.WallWallpost, timeZone string) (string, error) {
+func GetFormattedCalendar(posts []object.WallWallpost, timeZone string) (string, error) {
 	loc, err := time.LoadLocation(timeZone)
 	if err != nil {
 		return "", err // Return an error if the timezone is invalid
