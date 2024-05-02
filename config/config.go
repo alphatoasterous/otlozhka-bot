@@ -33,6 +33,7 @@ type (
 	messageHandlerConfig struct {
 		OtlozhkaRegex      string
 		UpdateStorageRegex string
+		PrintStorageRegex  string
 
 		StorageUpdatedMsgs        []string
 		StorageUpdatedCommendMsgs []string
@@ -44,6 +45,7 @@ type (
 	compiledRegexes struct {
 		Otlozhka      *regexp.Regexp
 		UpdateStorage *regexp.Regexp
+		PrintStorage  *regexp.Regexp
 	}
 )
 
@@ -65,6 +67,7 @@ func DefaultBotConfiguration() BotConfiguration {
 		MessageHandler: messageHandlerConfig{
 			OtlozhkaRegex:             "отложк[ауе]",
 			UpdateStorageRegex:        "обнови",
+			PrintStorageRegex:         "календарь",
 			StorageUpdatedMsgs:        []string{"Хранилище синхронизировано. Следующее обновление через 15 минут."},
 			StorageUpdatedCommendMsgs: []string{"Хранилище синхронизировано. Спасибо за Ваш труд!"},
 			PostponedPostsFoundMsgs:   []string{""},

@@ -14,6 +14,7 @@ Timezone = 'Europe/Moscow'          # Часовой пояс
 [MessageHandler]
 OtlozhkaRegex = 'отложк[ауе]'       # Регулярное выражение для ключевых слов, триггерящих поиск отложки
 UpdateStorageRegex = 'обнови'       # Регулярное выражение для ключевых слов, триггерящих обновление хранилища постов
+PrintStorageRegex = 'календарь'
 StorageUpdatedMsgs = ['Хранилище синхронизировано. Следующее обновление через 15 минут.']
 StorageUpdatedCommendMsgs = ['Хранилище синхронизировано. Спасибо за Ваш труд!']
 PostponedPostsFoundMsgs = ['']
