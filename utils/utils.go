@@ -3,7 +3,12 @@ package utils
 import (
 	"math/rand"
 	"strconv"
+	"time"
 )
+
+func UnixToTime(unixTime int64, location *time.Location) time.Time {
+	return time.Unix(unixTime, 0).In(location)
+}
 
 func StringToInt(s string) (int, error) {
 	i, err := strconv.Atoi(s)

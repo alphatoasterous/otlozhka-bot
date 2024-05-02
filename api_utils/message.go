@@ -8,12 +8,44 @@ import (
 	"github.com/alphatoasterous/otlozhka-bot/config"
 	"github.com/alphatoasterous/otlozhka-bot/utils"
 	"github.com/rs/zerolog/log"
+	"sort"
 	"time"
 )
 
 const RandomId = 0
 
 var messageBuilderConfig = config.BotConfig.MessageBuilder
+
+func getFormattedPostPublicationDates(posts []object.WallWallpost, timeZone string) (string, error) {
+	loc, err := time.LoadLocation(timeZone)
+	if err != nil {
+		return "", err // Return an error if the timezone is invalid
+	}
+
+	// Sort posts by date
+	sort.Slice(posts, func(i, j int) bool {
+		return posts[i].Date < posts[j].Date
+	})
+
+	// Group posts by date
+	groupedPosts := make(map[string][]object.WallWallpost)
+	for _, post := range posts {
+		dateStr := utils.UnixToTime(int64(post.Date), loc).Format("02.01.2006")
+		groupedPosts[dateStr] = append(groupedPosts[dateStr], post)
+	}
+
+	// Create the formatted output
+	var result string
+	for date, dailyPosts := range groupedPosts {
+		result += fmt.Sprintf("📅 %s:\n", date)
+		for _, post := range dailyPosts {
+			timeStr := utils.UnixToTime(int64(post.Date), loc).Format("15:04")
+			link := fmt.Sprintf("vk.com/wall%d_%d", post.OwnerID, post.ID)
+			result += fmt.Sprintf("%s: %s\n", timeStr, link)
+		}
+	}
+	return result, nil
+}
 
 func extractFormattedAttachmentsFromWallpost(attachment object.WallWallpostAttachment) string {
 	var attachmentString string
