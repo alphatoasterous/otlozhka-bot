@@ -91,10 +91,15 @@ func CreateMessageSendBuilderText(text string) *params.MessagesSendBuilder {
 	return msg
 }
 
-func GetFormattedCalendar(posts []object.WallWallpost, timeZone string) (string, error) {
-	loc, err := time.LoadLocation(timeZone)
+func GetFormattedCalendar(posts []object.WallWallpost, timezone string) (string, error) {
+	loc, err := time.LoadLocation(timezone)
 	if err != nil {
-		return "", err // Return an error if the timezone is invalid
+		// If loading timezone errors out: default to timezone provided via config. timezone variable may be used in
+		// future, if I could somehow get user's timezone from VK API.
+		loc, err = time.LoadLocation(messageBuilderConfig.Timezone)
+		if err != nil {
+			return "", err // Return an error if the timezone is invalid
+		}
 	}
 
 	// Group posts by date
