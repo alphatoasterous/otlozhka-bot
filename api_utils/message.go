@@ -1,6 +1,7 @@
 package api_utils
 
 import (
+	"errors"
 	"fmt"
 	"github.com/SevereCloud/vksdk/v2/api"
 	"github.com/SevereCloud/vksdk/v2/api/params"
@@ -9,6 +10,7 @@ import (
 	"github.com/alphatoasterous/otlozhka-bot/utils"
 	"github.com/rs/zerolog/log"
 	"sort"
+	"strings"
 	"time"
 )
 
@@ -30,7 +32,7 @@ func extractFormattedAttachmentsFromWallpost(attachment object.WallWallpostAttac
 	if api.FmtValue(attachment.Doc, 1) != "doc0_0" {
 		attachmentString += attachment.Doc.ToAttachment() + ","
 	}
-	return utils.RemoveTrailingComma(attachmentString)
+	return attachmentString
 }
 
 func getPublicationDate(postDate int) string {
@@ -46,6 +48,26 @@ func getPublicationDate(postDate int) string {
 
 func getMessageText(post object.WallWallpost) string {
 	return fmt.Sprintf(messageBuilderConfig.MessageFormat, getPublicationDate(post.Date), post.Text)
+}
+
+func getPostAudios(post object.WallWallpost) ([]object.AudioAudio, error) {
+	if len(post.Attachments) > 0 {
+		var postAudios []object.AudioAudio
+		for _, attachment := range post.Attachments {
+			if attachment.Audio.ID != 0 {
+				postAudios = append(postAudios, attachment.Audio)
+			}
+		}
+		if postAudios == nil {
+			return nil, errors.New("getPostAudios: Post doesn't contain any audio")
+		}
+		return postAudios, nil
+	}
+	return nil, errors.New("getPostAudios: Post doesn't contain any audio")
+}
+
+func getAudioArtistTitle(audio object.AudioAudio) string {
+	return fmt.Sprintf("%s - %s", audio.Artist, audio.Title)
 }
 
 func CreateMessageSendBuilderByPost(post object.WallWallpost) *params.MessagesSendBuilder {
@@ -71,25 +93,42 @@ func GetFormattedCalendar(posts []object.WallWallpost, timeZone string) (string,
 		return "", err // Return an error if the timezone is invalid
 	}
 
-	// Sort posts by date
-	sort.Slice(posts, func(i, j int) bool {
-		return posts[i].Date < posts[j].Date
-	})
-
 	// Group posts by date
-	groupedPosts := make(map[string][]object.WallWallpost)
+	groupedPosts := make(map[time.Time][]object.WallWallpost)
 	for _, post := range posts {
-		dateStr := utils.UnixToTime(int64(post.Date), loc).Format("02.01.2006")
-		groupedPosts[dateStr] = append(groupedPosts[dateStr], post)
+		dateTime := utils.UnixToTime(int64(post.Date), loc)
+		date := time.Date(dateTime.Year(), dateTime.Month(), dateTime.Day(), 0, 0, 0, 0, loc) // Round to midnight
+		groupedPosts[date] = append(groupedPosts[date], post)
 	}
+
+	// Sort keys of groupedPosts map
+	var dates []time.Time
+	for date := range groupedPosts {
+		dates = append(dates, date)
+	}
+	sort.Slice(dates, func(i, j int) bool { return dates[i].Before(dates[j]) })
 
 	// Create the formatted output
 	var result string
-	for date, dailyPosts := range groupedPosts {
-		result += fmt.Sprintf("📅 %s:\n", date)
+	for _, date := range dates {
+		dailyPosts := groupedPosts[date]
+		dateStr := date.Format("02.01.2006")
+		result += fmt.Sprintf("\n📅 %s:\n", dateStr)
 		for _, post := range dailyPosts {
 			timeStr := utils.UnixToTime(int64(post.Date), loc).Format("15:04")
 			link := fmt.Sprintf("vk.com/wall%d_%d", post.OwnerID, post.ID)
+			postAudios, err := getPostAudios(post)
+			if err != nil {
+				if err.Error() != "getPostAudios: Post doesn't contain any audio" {
+					return "", err
+				}
+			} else {
+				var audioTexts []string
+				for _, audio := range postAudios {
+					audioTexts = append(audioTexts, getAudioArtistTitle(audio))
+				}
+				link += " | 🎧: " + strings.Join(audioTexts, "; ")
+			}
 			result += fmt.Sprintf("%s: %s\n", timeStr, link)
 		}
 	}
