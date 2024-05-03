@@ -113,5 +113,6 @@ func init() {
 
 	BotConfig.CompiledRegexes.Otlozhka = regexp.MustCompile(BotConfig.MessageHandler.OtlozhkaRegex)
 	BotConfig.CompiledRegexes.UpdateStorage = regexp.MustCompile(BotConfig.MessageHandler.UpdateStorageRegex)
+	BotConfig.CompiledRegexes.PrintStorage = regexp.MustCompile(BotConfig.MessageHandler.PrintStorageRegex)
 
 }
