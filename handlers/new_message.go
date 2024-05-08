@@ -15,7 +15,10 @@ import (
 var messages = config.BotConfig.MessageHandler
 var regexes = config.BotConfig.CompiledRegexes
 
-func messagePosts(peerID int, vkCommunity *api.VK, foundPosts []object.WallWallpost) {
+// messageFoundPosts sends post messages to a specific peerID using the `*api.VK` client with Community access.
+// If predefined messages are available, it sends one at random. Then it sends details of each
+// found post in `foundPosts` to the same peerID. Each operation logs and handles errors critically.
+func messageFoundPosts(peerID int, vkCommunity *api.VK, foundPosts []object.WallWallpost) {
 	if len(messages.PostponedPostsFoundMsgs) != 0 { // if post found messages are defined
 		message := api_utils.CreateMessageSendBuilderText(
 			utils.GetRandomItemFromStrArray(messages.PostponedPostsFoundMsgs)) // send random message to user
@@ -35,6 +38,10 @@ func messagePosts(peerID int, vkCommunity *api.VK, foundPosts []object.WallWallp
 	}
 }
 
+// NewMessageHandler processes incoming messages from the new message event.
+// It checks the origin of the message, updates storage, or sends specific responses based on command recognition.
+// The function distinguishes between different message origins and contents to update wall post storage
+// or respond accordingly, employing regular expressions for command detection.
 func NewMessageHandler(obj events.MessageNewObject, vkCommunity *api.VK,
 	vkUser *api.VK, domain string, groupManagerIDs []int, storage *WallpostStorage) {
 	const communityChatID = 2000000004 // Community group chat
@@ -83,7 +90,7 @@ func NewMessageHandler(obj events.MessageNewObject, vkCommunity *api.VK,
 		posts := storage.GetWallposts()
 		foundPosts := GetWallpostsByPeerID(obj.Message.PeerID, posts)
 		if len(foundPosts) != 0 {
-			messagePosts(obj.Message.PeerID, vkCommunity, foundPosts)
+			messageFoundPosts(obj.Message.PeerID, vkCommunity, foundPosts)
 		} else {
 			message := api_utils.CreateMessageSendBuilderText(
 				utils.GetRandomItemFromStrArray(messages.NoPostponedPostsFoundMsgs))

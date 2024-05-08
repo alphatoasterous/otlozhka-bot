@@ -18,6 +18,10 @@ const RandomId = 0
 
 var messageBuilderConfig = config.BotConfig.MessageBuilder
 
+// extractFormattedAttachmentsFromWallpost extracts and formats attachments from a WallWallpostAttachment.
+// It compiles a string of attachment identifiers for photos, videos, audio, and documents.
+// Each type of attachment is checked for existence before appending its identifier to the result string.
+// The returned string can be directly used in API calls that require attachment string.
 func extractFormattedAttachmentsFromWallpost(attachment object.WallWallpostAttachment) string {
 	var attachmentString string
 	if api.FmtValue(attachment.Photo, 1) != "photo0_0" {
@@ -37,6 +41,9 @@ func extractFormattedAttachmentsFromWallpost(attachment object.WallWallpostAttac
 
 func getPublicationDate(postDate int) string {
 	t := time.Unix(int64(postDate), 0)
+// getReadableDate formats a UNIX timestamp into a readable date and time based on a specified timezone.
+// If an error occurs while loading the timezone, it logs the error and exits fatally.
+// Returns the formatted time as a string.
 	loc, err := time.LoadLocation(messageBuilderConfig.Timezone)
 	if err != nil {
 		log.Fatal().Err(err).Msg("Error loading timezone")
@@ -46,10 +53,14 @@ func getPublicationDate(postDate int) string {
 	return formattedTime
 }
 
+// getMessageText constructs the message text for a given post using a configurable format.
+// It integrates the post's publication date and text content, formatting the date using getReadableDate.
 func getMessageText(post object.WallWallpost) string {
 	return fmt.Sprintf(messageBuilderConfig.MessageFormat, getPublicationDate(post.Date), post.Text)
 }
 
+// getPostAudios extracts audio attachments from a WallWallpost.
+// Returns a slice of AudioAudio objects or an error if no audio attachments are found.
 func getPostAudios(post object.WallWallpost) ([]object.AudioAudio, error) {
 	if len(post.Attachments) > 0 {
 		var postAudios []object.AudioAudio
@@ -66,10 +77,13 @@ func getPostAudios(post object.WallWallpost) ([]object.AudioAudio, error) {
 	return nil, errors.New("getPostAudios: Post doesn't contain any audio")
 }
 
+// getAudioArtistTitle formats the artist and title of an audio into a single string.
 func getAudioArtistTitle(audio object.AudioAudio) string {
 	return fmt.Sprintf("%s - %s", audio.Artist, audio.Title)
 }
 
+// CreateMessageSendBuilderByPost prepares a message builder for sending messages,
+// incorporating text and attachments based on a provided WallWallpost.
 func CreateMessageSendBuilderByPost(post object.WallWallpost) *params.MessagesSendBuilder {
 	msg := params.NewMessagesSendBuilder()
 	msg.Message(getMessageText(post))
@@ -84,6 +98,7 @@ func CreateMessageSendBuilderByPost(post object.WallWallpost) *params.MessagesSe
 	return msg
 }
 
+// CreateMessageSendBuilderText creates a simple message send builder with text content.
 func CreateMessageSendBuilderText(text string) *params.MessagesSendBuilder {
 	msg := params.NewMessagesSendBuilder()
 	msg.Message(text)
@@ -91,6 +106,9 @@ func CreateMessageSendBuilderText(text string) *params.MessagesSendBuilder {
 	return msg
 }
 
+// GetFormattedCalendar groups wall posts by date and formats them into a readable calendar view.
+// The formatting takes into account the timezone, sorting posts by date.
+// Returns a formatted string representing the post calendar or an error if an issue occurs during formatting.
 func GetFormattedCalendar(posts []object.WallWallpost, timezone string) (string, error) {
 	loc, err := time.LoadLocation(timezone)
 	if err != nil {

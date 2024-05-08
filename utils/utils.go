@@ -18,6 +18,9 @@ func StringToInt(s string) (int, error) {
 	return i, nil
 }
 
+// RemoveTrailingComma checks the given string `s` for a trailing comma.
+// If `s` ends with a comma, it removes the trailing comma and returns the modified string.
+// If there is no trailing comma, it returns the string unchanged.
 func RemoveTrailingComma(s string) string {
 	if len(s) > 0 && s[len(s)-1] == ',' {
 		return s[:len(s)-1]
