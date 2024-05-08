@@ -20,10 +20,10 @@ type WallpostStorage struct {
 // NewWallpostStorage initializes a new WallpostStorage with a specified keepAlive duration.
 // The keepAlive parameter determines how long (in seconds) the posts are considered fresh.
 // Returns a pointer to the newly created WallpostStorage.
-func NewWallpostStorage(keepAlive int) *WallpostStorage {
+func NewWallpostStorage(keepAlive int64) *WallpostStorage {
 	return &WallpostStorage{
 		timestamp: 0,
-		keepAlive: int64(keepAlive), // TODO: Change function interface to `int64` and remove conversion
+		keepAlive: keepAlive,
 	}
 }
 

@@ -39,11 +39,11 @@ func extractFormattedAttachmentsFromWallpost(attachment object.WallWallpostAttac
 	return attachmentString
 }
 
-func getPublicationDate(postDate int) string {
-	t := time.Unix(int64(postDate), 0)
 // getReadableDate formats a UNIX timestamp into a readable date and time based on a specified timezone.
 // If an error occurs while loading the timezone, it logs the error and exits fatally.
 // Returns the formatted time as a string.
+func getReadableDate(timestamp int64) string {
+	t := time.Unix(timestamp, 0)
 	loc, err := time.LoadLocation(messageBuilderConfig.Timezone)
 	if err != nil {
 		log.Fatal().Err(err).Msg("Error loading timezone")
@@ -56,7 +56,7 @@ func getPublicationDate(postDate int) string {
 // getMessageText constructs the message text for a given post using a configurable format.
 // It integrates the post's publication date and text content, formatting the date using getReadableDate.
 func getMessageText(post object.WallWallpost) string {
-	return fmt.Sprintf(messageBuilderConfig.MessageFormat, getPublicationDate(post.Date), post.Text)
+	return fmt.Sprintf(messageBuilderConfig.MessageFormat, getReadableDate(int64(post.Date)), post.Text)
 }
 
 // getPostAudios extracts audio attachments from a WallWallpost.

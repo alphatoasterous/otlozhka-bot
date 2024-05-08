@@ -39,7 +39,7 @@ func main() {
 
 	// Setting up wallpost storage
 	keepAlive := botConfig.StorageKeepAlive
-	wallpostStorage := handlers.NewWallpostStorage(keepAlive)
+	wallpostStorage := handlers.NewWallpostStorage(int64(keepAlive))
 	wallpostStorage.UpdateWallpostStorage(vkUser, domain)
 	log.Debug().Msg("Wallpost Storage instance set up")
 
