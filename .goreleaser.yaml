@@ -17,7 +17,7 @@ before:
 
 upx:
   - # Whether to enable it or not.
-    enabled: true
+    enabled: false
 
     # Filter by GOOS.
 
