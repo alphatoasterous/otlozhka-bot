@@ -65,7 +65,10 @@ func NewMessageHandler(obj events.MessageNewObject, vkCommunity *api.VK,
 					log.Fatal().Err(err)
 				}
 			case regexes.PrintStorage.MatchString(incomingMessageText):
-				log.Debug().Msgf("Update storage message[id%d]: %s", obj.Message.PeerID, obj.Message.Text)
+				log.Debug().Msgf("Print storage message[id%d]: %s", obj.Message.PeerID, obj.Message.Text)
+				if storage.CheckWallpostStorageNeedsUpdate() {
+					storage.UpdateWallpostStorage(vkUser, domain)
+				}
 				formattedCalendar, err := api_utils.GetFormattedCalendar(storage.GetWallposts(), "Europe/Moscow")
 				if err != nil {
 					log.Fatal().Err(err)
