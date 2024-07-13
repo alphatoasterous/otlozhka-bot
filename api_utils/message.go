@@ -100,6 +100,12 @@ func CreateMessageSendBuilderByPost(post object.WallWallpost) *params.MessagesSe
 
 // CreateMessageSendBuilderText creates a simple message send builder with text content.
 func CreateMessageSendBuilderText(text string) *params.MessagesSendBuilder {
+
+	// TODO: Rework this and entire messaging routine altogether by segmenting text into array of messages if needed
+	VK_MESSAGE_LIMIT := 4096
+	if len(text) > VK_MESSAGE_LIMIT {
+		text = text[:VK_MESSAGE_LIMIT-3] + "..."
+	}
 	msg := params.NewMessagesSendBuilder()
 	msg.Message(text)
 	msg.RandomID(RandomId)
