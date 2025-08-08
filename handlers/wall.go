@@ -1,10 +1,11 @@
 package handlers
 
 import (
+	"time"
+
 	"github.com/SevereCloud/vksdk/v2/api"
 	"github.com/SevereCloud/vksdk/v2/object"
 	"github.com/rs/zerolog/log"
-	"time"
 )
 
 // WallpostStorage manages the storage and retrieval of wall posts.
@@ -92,26 +93,76 @@ func flattenWallpostArray(posts [][]object.WallWallpost) []object.WallWallpost {
 // For more information about the method, check VK API documentation page: https://dev.vk.com/wall.get
 // This method filters for "postponed" posts using the 'filter' field in the API request parameters.
 // On successful retrieval of all posts, the function returns a flat slice of WallWallpost objects.
-// If an error occurs during the API calls, it returns an error and logs the failure.
+// If an error occurs during the API calls, it tries to retry five times, while logging the failure.
+// If retries fails, it crashes miserably.
 // The return includes a slice of all postponed WallWallpost objects and an error, if any occurred.
 func GetAllPostponedWallposts(vkUser *api.VK, domain string) ([]object.WallWallpost, error) {
-	var allPosts [][]object.WallWallpost
-	var offset int
-	for {
-		const maxWallPostCount = 100
-		response, err := vkUser.WallGet(
-			api.Params{"domain": domain, "offset": offset, "filter": "postponed", "count": maxWallPostCount})
-		if err != nil {
-			log.Fatal().Err(err)
-			return nil, err
+	const maxWallPostCount = 100
+	const maxRetries = 5
+	const retrySleepTime = time.Second * 2
+
+	var (
+		allPosts [][]object.WallWallpost
+		offset   int
+	)
+
+	// Retry function with panic recovery and a retry limit
+	// This was done due to possibility of post count being non-constant value.
+	// (e.g. postponed post got deleted/published while executing this function)
+	tryFetchingWallposts := func() ([]object.WallWallpost, error) {
+		defer func() {
+			if r := recover(); r != nil {
+				log.Warn().Msg("Recovered from panic, retrying...")
+			}
+		}()
+
+		for {
+			response, err := vkUser.WallGet(api.Params{
+				"domain": domain,
+				"offset": offset,
+				"filter": "postponed",
+				"count":  maxWallPostCount,
+			})
+			if err != nil {
+				log.Panic().Err(err).Msg("Failed to fetch wall posts")
+				return nil, err
+			}
+
+			allPosts = append(allPosts, response.Items)
+
+			// Check if we've fetched all posts
+			if offset+maxWallPostCount >= response.Count {
+				break
+			}
+
+			offset += maxWallPostCount
 		}
-		allPosts = append(allPosts, response.Items)
-		if len(allPosts)*maxWallPostCount >= response.Count {
+
+		// Return flattened wall posts
+		return flattenWallpostArray(allPosts), nil
+	}
+
+	// Call the retry function, limiting to maxRetries
+	var result []object.WallWallpost
+	var err error
+
+	for retries := 0; retries < maxRetries; retries++ {
+		result, err = tryFetchingWallposts()
+		if err == nil {
 			break
 		}
-		offset += maxWallPostCount
+
+		log.Warn().Int("attempt", retries+1).Msg("Retrying wallpost fetch due to error")
+		if retries == maxRetries-1 {
+			log.Fatal().Err(err).Msg("Maximum retry attempts reached. Exiting...")
+			return nil, err
+		}
+
+		time.Sleep(retrySleepTime)
 	}
-	return flattenWallpostArray(allPosts), nil
+
+	return result, nil
+
 }
 
 // GetWallpostsByPeerID filters a slice of WallWallpost objects based on the SignerID of every WallWallpost object.
