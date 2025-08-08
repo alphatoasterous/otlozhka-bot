@@ -9,8 +9,8 @@ import (
 	"github.com/SevereCloud/vksdk/v2/object"
 	"github.com/alphatoasterous/otlozhka-bot/api_utils"
 	"github.com/alphatoasterous/otlozhka-bot/config"
+	"github.com/alphatoasterous/otlozhka-bot/logging"
 	"github.com/alphatoasterous/otlozhka-bot/utils"
-	"github.com/rs/zerolog/log"
 )
 
 var messages = config.BotConfig.MessageHandler
@@ -26,7 +26,7 @@ func messageFoundPosts(peerID int, vkCommunity *api.VK, foundPosts []object.Wall
 		message.PeerID(peerID)
 		_, err := vkCommunity.MessagesSend(message.Params)
 		if err != nil {
-			log.Fatal().Err(err)
+			logging.Log.Fatal().Err(err)
 		}
 	}
 	for _, post := range foundPosts {
@@ -34,7 +34,7 @@ func messageFoundPosts(peerID int, vkCommunity *api.VK, foundPosts []object.Wall
 		msg.PeerID(peerID)
 		_, err := vkCommunity.MessagesSend(msg.Params)
 		if err != nil {
-			log.Fatal().Err(err)
+			logging.Log.Fatal().Err(err)
 		}
 	}
 }
@@ -51,7 +51,7 @@ func NewMessageHandler(obj events.MessageNewObject, vkCommunity *api.VK,
 		if slices.Contains(groupManagerIDs, obj.Message.PeerID) { // If message came from community management
 			switch {
 			case regexes.UpdateStorage.MatchString(incomingMessageText):
-				log.Debug().Msgf("Update storage message[id%d]: %s", obj.Message.PeerID, obj.Message.Text)
+				logging.Log.Debug().Msgf("Update storage message[id%d]: %s", obj.Message.PeerID, obj.Message.Text)
 				previousWallpostCount := storage.GetWallpostCount()
 				storage.UpdateWallpostStorage(vkUser, domain)
 				message := api_utils.CreateMessageSendBuilderText("")
@@ -63,10 +63,10 @@ func NewMessageHandler(obj events.MessageNewObject, vkCommunity *api.VK,
 				message.PeerID(obj.Message.PeerID)
 				_, err := vkCommunity.MessagesSend(message.Params)
 				if err != nil {
-					log.Fatal().Err(err)
+					logging.Log.Fatal().Err(err)
 				}
 			case regexes.PrintStorage.MatchString(incomingMessageText):
-				log.Debug().Msgf("Print storage message[id%d]: %s", obj.Message.PeerID, obj.Message.Text)
+				logging.Log.Debug().Msgf("Print storage message[id%d]: %s", obj.Message.PeerID, obj.Message.Text)
 				if storage.CheckWallpostStorageNeedsUpdate() {
 					storage.UpdateWallpostStorage(vkUser, domain)
 				}
@@ -75,7 +75,7 @@ func NewMessageHandler(obj events.MessageNewObject, vkCommunity *api.VK,
 				if storage.GetWallpostCount() > 0 {
 					responseMessage, err = api_utils.GetFormattedCalendar(storage.GetWallposts(), "Europe/Moscow")
 					if err != nil {
-						log.Fatal().Err(err)
+						logging.Log.Fatal().Err(err)
 					}
 				} else {
 					responseMessage = utils.GetRandomItemFromStrArray(messages.StorageEmptyMsgs)
@@ -84,7 +84,7 @@ func NewMessageHandler(obj events.MessageNewObject, vkCommunity *api.VK,
 				message.PeerID(obj.Message.PeerID)
 				_, err = vkCommunity.MessagesSend(message.Params)
 				if err != nil {
-					log.Fatal().Err(err)
+					logging.Log.Fatal().Err(err)
 				}
 			}
 		}
@@ -93,7 +93,7 @@ func NewMessageHandler(obj events.MessageNewObject, vkCommunity *api.VK,
 
 	switch {
 	case regexes.Otlozhka.MatchString(incomingMessageText):
-		log.Printf("Incoming message[id%d]: %s", obj.Message.PeerID, obj.Message.Text)
+		logging.Log.Printf("Incoming message[id%d]: %s", obj.Message.PeerID, obj.Message.Text)
 		if storage.CheckWallpostStorageNeedsUpdate() {
 			storage.UpdateWallpostStorage(vkUser, domain)
 		}
@@ -107,7 +107,7 @@ func NewMessageHandler(obj events.MessageNewObject, vkCommunity *api.VK,
 			message.PeerID(obj.Message.PeerID)
 			_, err := vkCommunity.MessagesSend(message.Params)
 			if err != nil {
-				log.Fatal().Err(err)
+				logging.Log.Fatal().Err(err)
 			}
 		}
 	}

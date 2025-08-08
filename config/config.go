@@ -2,19 +2,41 @@ package config
 
 import (
 	"flag"
+	"fmt"
 	"os"
 	"regexp"
 
 	"github.com/pelletier/go-toml/v2"
-	"github.com/rs/zerolog/log"
 )
 
 type (
 	BotConfiguration struct {
 		Main            mainConfig
+		ZerologConfig   ZerologConfiguration
 		MessageBuilder  messageBuilderConfig
 		MessageHandler  messageHandlerConfig
 		CompiledRegexes compiledRegexes
+	}
+
+	ZerologConfiguration struct {
+		// Enable console logging
+		ConsoleLoggingEnabled bool
+
+		// EncodeLogsAsJson makes the log framework log JSON
+		EncodeLogsAsJson bool
+		// FileLoggingEnabled makes the framework log to a file
+		// the fields below can be skipped if this value is false!
+		FileLoggingEnabled bool
+		// Directory to log to to when filelogging is enabled
+		Directory string
+		// Filename is the name of the logfile which will be placed inside the directory
+		Filename string
+		// MaxSize the max size in MB of the logfile before it's rolled
+		MaxSize int
+		// MaxBackups the max number of rolled files to keep
+		MaxBackups int
+		// MaxAge the max age in days to keep a logfile
+		MaxAge int
 	}
 
 	mainConfig struct {
@@ -61,6 +83,16 @@ func DefaultBotConfiguration() BotConfiguration {
 			UserAPIRateLimit:      1,
 			StorageKeepAlive:      900,
 		},
+		ZerologConfig: ZerologConfiguration{
+			ConsoleLoggingEnabled: true,
+			EncodeLogsAsJson:      true,
+			FileLoggingEnabled:    true,
+			Directory:             "logs",
+			Filename:              "otlozhka-bot.log",
+			MaxSize:               5,
+			MaxBackups:            5,
+			MaxAge:                30,
+		},
 		MessageBuilder: messageBuilderConfig{
 			MessageFormat: "📅 : %s\n📝: %s",
 			TimeFormat:    "02.01.2006 15:04:05",
@@ -86,32 +118,38 @@ func init() {
 
 	BotConfig = DefaultBotConfiguration()
 
+	fmt.Printf("DEBUG: Loading configuration from a file")
 	// Check if config.toml exists
 	_, err := os.Stat(*configFilename)
 	if os.IsNotExist(err) {
-		log.Warn().Msgf("%s does not exist, creating it with default parameters", *configFilename)
+		fmt.Printf("WARNING: %s does not exist, creating it with default parameters\n", *configFilename)
 		tomlBotConfig, err := toml.Marshal(BotConfig)
 		if err != nil {
-			log.Fatal().Err(err).Msg("Error marshalling BotConfig")
+			fmt.Printf("ERROR: Cannot marshal BotConfig: %v, path: %s\n", err, *configFilename)
+			return
 		}
 		err = os.WriteFile(*configFilename, tomlBotConfig, 0644)
 		if err != nil {
-			log.Fatal().Err(err).Msgf("Error writing marshalled BotConfig to a %s", *configFilename)
+			fmt.Printf("ERROR: Error writing marshalled BotConfig to a %s", *configFilename)
+			return
 		}
 	} else {
-		log.Debug().Msgf("%s does exist, unmarshalling it", *configFilename)
+		fmt.Printf("DEBUG: %s does exist, unmarshalling it\n", *configFilename)
 		tomlFile, err := os.ReadFile(*configFilename)
 		if err != nil {
-			log.Fatal().Err(err).Msgf("Error reading %s", *configFilename)
+			fmt.Printf("ERROR: Error reading %s: %v\n", *configFilename, err)
+			return
 		}
 		err = toml.Unmarshal(tomlFile, &BotConfig)
 		if err != nil {
-			log.Fatal().Err(err).Msgf("Error unmarshalling %s", *configFilename)
+			fmt.Printf("ERROR: Error unmarshalling %s: %v\n", *configFilename, err)
+			return
 		}
 	}
 
 	if BotConfig.Main.UserToken == "" || BotConfig.Main.CommunityToken == "" {
-		log.Fatal().Msg("No UserToken or CommunityToken provided")
+		fmt.Println("ERROR: No UserToken or CommunityToken provided")
+		return
 	}
 
 	BotConfig.CompiledRegexes.Otlozhka = regexp.MustCompile(BotConfig.MessageHandler.OtlozhkaRegex)

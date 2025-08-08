@@ -29,4 +29,6 @@ config.toml
 # Build directory
 dist/
 
+# Logger logs
+logs/
 

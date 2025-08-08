@@ -2,7 +2,7 @@ package api_utils
 
 import (
 	"github.com/SevereCloud/vksdk/v2/api"
-	"github.com/rs/zerolog/log"
+	"github.com/alphatoasterous/otlozhka-bot/logging"
 )
 
 // GetGroupInfo retrieves information about the community/group page using a `*api.VK* instance with community access.
@@ -11,7 +11,7 @@ import (
 func GetGroupInfo(vkCommunity *api.VK) api.GroupsGetByIDResponse {
 	group, err := vkCommunity.GroupsGetByID(nil)
 	if err != nil {
-		log.Fatal().Err(err)
+		logging.Log.Fatal().Err(err)
 	}
 	return group
 }
@@ -38,7 +38,7 @@ func IsManagerWithRights(role string) bool {
 func GetGroupManagerIDs(vkUser *api.VK, domain string) []int {
 	groupManagers, err := vkUser.GroupsGetMembersFilterManagers(api.Params{"group_id": domain})
 	if err != nil {
-		log.Fatal().Err(err)
+		logging.Log.Fatal().Err(err)
 	}
 	groupManagerIDs := make([]int, 0, len(groupManagers.Items))
 	for _, groupManager := range groupManagers.Items {

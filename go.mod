@@ -7,6 +7,7 @@ require github.com/SevereCloud/vksdk/v2 v2.16.1 // direct
 require (
 	github.com/pelletier/go-toml/v2 v2.1.1
 	github.com/rs/zerolog v1.32.0
+	gopkg.in/natefinch/lumberjack.v2 v2.2.1
 )
 
 require (

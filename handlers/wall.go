@@ -5,7 +5,7 @@ import (
 
 	"github.com/SevereCloud/vksdk/v2/api"
 	"github.com/SevereCloud/vksdk/v2/object"
-	"github.com/rs/zerolog/log"
+	"github.com/alphatoasterous/otlozhka-bot/logging"
 )
 
 // WallpostStorage manages the storage and retrieval of wall posts.
@@ -32,7 +32,7 @@ func NewWallpostStorage(keepAlive int64) *WallpostStorage {
 // It logs the retrieval process and the number of posts fetched.
 // Returns a slice of WallWallpost objects.
 func (wpStorage *WallpostStorage) GetWallposts() []object.WallWallpost {
-	log.Print("WPStorage: Getting Wallposts from storage... Stored posts amount:", wpStorage.GetWallpostCount())
+	logging.Log.Print("WPStorage: Getting Wallposts from storage... Stored posts amount:", wpStorage.GetWallpostCount())
 	return wpStorage.wallPosts
 }
 
@@ -47,10 +47,10 @@ func (wpStorage *WallpostStorage) GetWallpostCount() int {
 func (wpStorage *WallpostStorage) CheckWallpostStorageNeedsUpdate() bool {
 	currentTimestamp := time.Now().Unix()
 	if currentTimestamp-wpStorage.timestamp >= wpStorage.keepAlive {
-		log.Info().Msg("WPStorage: Wallposts in wallpost storage are stale")
+		logging.Log.Info().Msg("WPStorage: Wallposts in wallpost storage are stale")
 		return true
 	} else {
-		log.Info().Msg("WPStorage: Wallposts in wallpost storage are not stale")
+		logging.Log.Info().Msg("WPStorage: Wallposts in wallpost storage are not stale")
 		return false
 	}
 }
@@ -61,7 +61,7 @@ func (wpStorage *WallpostStorage) UpdateWallpostStorage(vkUser *api.VK, domain s
 
 	postponedPosts, err := GetAllPostponedWallposts(vkUser, domain)
 	if err != nil {
-		log.Fatal().Err(err)
+		logging.Log.Fatal().Err(err)
 	}
 	wpStorage.wallPosts = postponedPosts
 	wpStorage.timestamp = time.Now().Unix()
@@ -112,7 +112,7 @@ func GetAllPostponedWallposts(vkUser *api.VK, domain string) ([]object.WallWallp
 	tryFetchingWallposts := func() ([]object.WallWallpost, error) {
 		defer func() {
 			if r := recover(); r != nil {
-				log.Warn().Msg("Recovered from panic, retrying...")
+				logging.Log.Warn().Msg("Recovered from panic, retrying...")
 			}
 		}()
 
@@ -124,7 +124,7 @@ func GetAllPostponedWallposts(vkUser *api.VK, domain string) ([]object.WallWallp
 				"count":  maxWallPostCount,
 			})
 			if err != nil {
-				log.Panic().Err(err).Msg("Failed to fetch wall posts")
+				logging.Log.Warn().Err(err).Msg("Failed to fetch wall posts")
 				return nil, err
 			}
 
@@ -152,9 +152,9 @@ func GetAllPostponedWallposts(vkUser *api.VK, domain string) ([]object.WallWallp
 			break
 		}
 
-		log.Warn().Int("attempt", retries+1).Msg("Retrying wallpost fetch due to error")
+		logging.Log.Warn().Int("attempt", retries+1).Msg("Retrying wallpost fetch due to error")
 		if retries == maxRetries-1 {
-			log.Fatal().Err(err).Msg("Maximum retry attempts reached. Exiting...")
+			logging.Log.Fatal().Err(err).Msg("Maximum retry attempts reached. Exiting...")
 			return nil, err
 		}
 

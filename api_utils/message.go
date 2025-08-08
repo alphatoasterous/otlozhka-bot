@@ -3,15 +3,16 @@ package api_utils
 import (
 	"errors"
 	"fmt"
+	"sort"
+	"strings"
+	"time"
+
 	"github.com/SevereCloud/vksdk/v2/api"
 	"github.com/SevereCloud/vksdk/v2/api/params"
 	"github.com/SevereCloud/vksdk/v2/object"
 	"github.com/alphatoasterous/otlozhka-bot/config"
+	"github.com/alphatoasterous/otlozhka-bot/logging"
 	"github.com/alphatoasterous/otlozhka-bot/utils"
-	"github.com/rs/zerolog/log"
-	"sort"
-	"strings"
-	"time"
 )
 
 const RandomId = 0
@@ -46,7 +47,7 @@ func getReadableDate(timestamp int64) string {
 	t := time.Unix(timestamp, 0)
 	loc, err := time.LoadLocation(messageBuilderConfig.Timezone)
 	if err != nil {
-		log.Fatal().Err(err).Msg("Error loading timezone")
+		logging.Log.Fatal().Err(err).Msg("Error loading timezone")
 	}
 	t = t.In(loc)
 	formattedTime := t.Format(messageBuilderConfig.TimeFormat)
