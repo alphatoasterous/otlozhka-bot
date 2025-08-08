@@ -78,7 +78,7 @@ func NewMessageHandler(obj events.MessageNewObject, vkCommunity *api.VK,
 						log.Fatal().Err(err)
 					}
 				} else {
-					responseMessage = utils.GetRandomItemFromStrArray(messages.NoPostponedPostsFoundMsgs)
+					responseMessage = utils.GetRandomItemFromStrArray(messages.StorageEmptyMsgs)
 				}
 				message := api_utils.CreateMessageSendBuilderText(responseMessage)
 				message.PeerID(obj.Message.PeerID)

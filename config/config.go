@@ -2,10 +2,11 @@ package config
 
 import (
 	"flag"
-	"github.com/pelletier/go-toml/v2"
-	"github.com/rs/zerolog/log"
 	"os"
 	"regexp"
+
+	"github.com/pelletier/go-toml/v2"
+	"github.com/rs/zerolog/log"
 )
 
 type (
@@ -37,6 +38,7 @@ type (
 
 		StorageUpdatedMsgs        []string
 		StorageUpdatedCommendMsgs []string
+		StorageEmptyMsgs          []string
 
 		PostponedPostsFoundMsgs   []string
 		NoPostponedPostsFoundMsgs []string
@@ -70,6 +72,7 @@ func DefaultBotConfiguration() BotConfiguration {
 			PrintStorageRegex:         "календарь",
 			StorageUpdatedMsgs:        []string{"Хранилище синхронизировано. Следующее обновление через 15 минут."},
 			StorageUpdatedCommendMsgs: []string{"Хранилище синхронизировано. Спасибо за Ваш труд!"},
+			StorageEmptyMsgs:          []string{"В хранилище пусто. Вероятно, в сообществе нет отложенных постов."},
 			PostponedPostsFoundMsgs:   []string{""},
 			NoPostponedPostsFoundMsgs: []string{"Отложенных постов не найдено."},
 		},
