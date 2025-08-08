@@ -1,6 +1,9 @@
 package handlers
 
 import (
+	"slices"
+	"strings"
+
 	"github.com/SevereCloud/vksdk/v2/api"
 	"github.com/SevereCloud/vksdk/v2/events"
 	"github.com/SevereCloud/vksdk/v2/object"
@@ -8,8 +11,6 @@ import (
 	"github.com/alphatoasterous/otlozhka-bot/config"
 	"github.com/alphatoasterous/otlozhka-bot/utils"
 	"github.com/rs/zerolog/log"
-	"slices"
-	"strings"
 )
 
 var messages = config.BotConfig.MessageHandler
@@ -69,11 +70,17 @@ func NewMessageHandler(obj events.MessageNewObject, vkCommunity *api.VK,
 				if storage.CheckWallpostStorageNeedsUpdate() {
 					storage.UpdateWallpostStorage(vkUser, domain)
 				}
-				formattedCalendar, err := api_utils.GetFormattedCalendar(storage.GetWallposts(), "Europe/Moscow")
-				if err != nil {
-					log.Fatal().Err(err)
+				var responseMessage string
+				var err error
+				if storage.GetWallpostCount() > 0 {
+					responseMessage, err = api_utils.GetFormattedCalendar(storage.GetWallposts(), "Europe/Moscow")
+					if err != nil {
+						log.Fatal().Err(err)
+					}
+				} else {
+					responseMessage = utils.GetRandomItemFromStrArray(messages.NoPostponedPostsFoundMsgs)
 				}
-				message := api_utils.CreateMessageSendBuilderText(formattedCalendar)
+				message := api_utils.CreateMessageSendBuilderText(responseMessage)
 				message.PeerID(obj.Message.PeerID)
 				_, err = vkCommunity.MessagesSend(message.Params)
 				if err != nil {
